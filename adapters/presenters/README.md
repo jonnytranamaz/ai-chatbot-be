@@ -1,0 +1,1 @@
+Presenters format the output data from use cases for the UI or API response.

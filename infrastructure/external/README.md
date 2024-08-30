@@ -1,0 +1,1 @@
+Retrieve from resources from third parties.

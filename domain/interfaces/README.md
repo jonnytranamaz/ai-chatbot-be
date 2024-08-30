@@ -1,0 +1,1 @@
+This contains abstract definitions (interfaces) that outline how different parts of the system should interact with the domain.

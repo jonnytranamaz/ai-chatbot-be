@@ -1,0 +1,1 @@
+This directory contains the core business objects that encapsulate the main data and logic for ai chat bot application.
