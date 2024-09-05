@@ -46,11 +46,11 @@ INSTALLED_APPS = [
 
     # 3rd Party library
     'rest_framework',
-    'django_socketio',    'channels',
-    'socketio',
+    'channels',
+    
     
 ]
-
+# 'django_socketio', 'socketio',
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

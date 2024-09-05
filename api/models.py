@@ -89,7 +89,7 @@ class Room(models.Model):
 
         new_message = ChatMessage(room=self, sender=sender, message=message)
         new_message.save()
- 
+
 class ChatMessage(models.Model):
     message = models.CharField(max_length=10000000000)
     date = models.DateTimeField(auto_now_add=True)
