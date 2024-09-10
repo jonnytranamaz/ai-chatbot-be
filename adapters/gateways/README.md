@@ -1,1 +1,0 @@
-Gateways provide access to external systems or services by implementing the interfaces defined in the domain layer.

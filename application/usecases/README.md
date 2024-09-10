@@ -1,1 +1,0 @@
-Contains use cases (features) that dictate how the application behaves for specific scenarios.

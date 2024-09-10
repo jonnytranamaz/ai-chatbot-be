@@ -4,7 +4,7 @@
 
 * Layered archietecture
 
-* Isolate the business rules: (adapters(application(domain))) 
+* Isolate the business rules: (presentation(application(domain))infrastructure) 
 
 * Infrastructures such as: frameworks, technologies, database, UI,.. located in outer layer (Can be changed and extended)
 
@@ -13,13 +13,13 @@
 * Components'change does not affect the core
 
 /domain
-This layer represents the core business logic and rules of the application, and it is independent of any frameworks or external services.
+Domain Layer (Entities): Chứa các đối tượng cốt lõi và logic nghiệp vụ cơ bản của hệ thống. Đây là tầng độc lập và có thể dùng lại trong nhiều bối cảnh.
 
 /application
-This layer contains the application-specific business logic, focusing on orchestrating the domain logic according to the application's use cases.
+Application Layer (Use Cases): Xử lý các quy tắc nghiệp vụ cụ thể. Đây là nơi các luồng nghiệp vụ xảy ra, và tương tác với các repository interface để lấy dữ liệu.
 
-/adapters
-This layer handles the conversion of data and requests from the outside world into a form that the application can process, and vice versa.
+/presentation
+Presentation Layer (UI): Giao diện người dùng, bao gồm controller, các API hoặc web UI để nhận yêu cầu và trả về kết quả.
 
 /infrastructure
-This layer contains the concrete implementations of the interfaces defined in the domain layer and manages interaction with external services and databases.
+Infrastructure Layer: Chứa các thành phần kỹ thuật như kết nối cơ sở dữ liệu, API bên ngoài, và các cài đặt chi tiết về repository.

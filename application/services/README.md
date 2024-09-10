@@ -1,1 +1,0 @@
-Implements business services that execute the use cases by coordinating different domain entities and interfaces.
