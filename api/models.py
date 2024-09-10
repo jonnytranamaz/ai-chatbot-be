@@ -78,7 +78,7 @@ from django.conf import settings
     
 class Room(models.Model):
     room_name = models.CharField(max_length=255)
-
+    
     def __str__(self):
         return self.room_name
     
@@ -98,6 +98,8 @@ class ChatMessage(models.Model):
 
     def __str__(self) -> str:
         return f"{self.message} - {self.date}"
+    
+
 
    
 

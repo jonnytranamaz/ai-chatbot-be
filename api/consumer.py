@@ -3,6 +3,8 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from api.models import *
 import asyncio
+import httpx
+from api.constants import *
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -55,14 +57,14 @@ class TestConsumer(AsyncWebsocketConsumer):
         pass 
 
     async def receive(self, text_data):
-        # text_data_json = json.loads(text_data)
-        # message = text_data_json
+        text_data_json = json.loads(text_data)
+        message = text_data_json
 
         print(f'Data: {text_data}')
         
         event = {
             'type': 'chat_message',
-            'message': "This is Amaz Chatbot",
+            'message': message #"This is Amaz Chatbot",
         }
 
         await self.channel_layer.group_send(self.room_name, event)
@@ -72,14 +74,26 @@ class TestConsumer(AsyncWebsocketConsumer):
         data = event['message']
         # await self.create_message(data=data)
 
-        print(f'Data2: {data}')
+        print(f'Data2: {data['message']['text']}')
 
+        json_data = {
+            'message': data['message']['text']
+        }
+        api_url = api_nlu_address
+
+        response = await self.call_nlu_api(api_url, json_data)
+
+        print(f"response: {response}")
         response_data = {
             #'sender': data['sender'],
-            'message': data #data['message']
+            'message': response[0]['text'] #data['message']
         }
         await self.send(text_data=json.dumps({'message': response_data}))
 
+    async def call_nlu_api(self, url, data):
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url, json=data)
+            return response.json()
     # @database_sync_to_async
     # def create_message(self, data):
 
@@ -89,4 +103,5 @@ class TestConsumer(AsyncWebsocketConsumer):
     #         new_message = ChatMessage(room=get_room_by_name, sender=data['sender'], message=data['message'])
     #         new_message.save()  
          
-        
+       
+       

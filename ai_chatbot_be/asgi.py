@@ -31,14 +31,14 @@ application = ProtocolTypeRouter({
     # )
     "websocket": AuthMiddlewareStack(
         URLRouter(
-            # routing.websocket_urlpatterns
-            [
-                path(r'ws/notification-test', TestConsumer.as_asgi()),
-                #path(r'ws/', TestConsumer.as_asgi()),
-                path(r'ws', TestConsumer.as_asgi()),
-                #path(r'/ws/', TestConsumer.as_asgi()),
-                #path(r'/ws', TestConsumer.as_asgi()),
-            ]
+            routing.websocket_urlpatterns
+            # [
+            #     path(r'ws/notification-test', TestConsumer.as_asgi()),
+            #     #path(r'ws/', TestConsumer.as_asgi()),
+            #     path(r'ws', TestConsumer.as_asgi()),
+            #     #path(r'/ws/', TestConsumer.as_asgi()),
+            #     #path(r'/ws', TestConsumer.as_asgi()),
+            # ]
         )
     )
 })

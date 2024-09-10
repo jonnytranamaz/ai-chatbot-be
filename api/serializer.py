@@ -102,11 +102,21 @@ from api.models import *
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatMessage
-        fields = ('date', 'message', 'room', 'sender')
+        fields = ['date', 'message', 'room', 'sender']
 
 
 class RoomSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
-        fields = ('room_name')
+        fields = ['room_name'] #"__all__" #('room_name',)
+
+    # def create(self, validated_data):
+    #     return Room.objects.create(**validated_data)
+    
+    # def update(self, instance, validated_data):
+    #     instance.room_name = validated_data.get('room_name', instance.room_name)
+
+    #     instance.save()
+    #     return instance
+    
     

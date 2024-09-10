@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from . import views
 from django.urls import path
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, Http404
 from django.db.models import OuterRef, Subquery
 from django.db.models import Q
 
@@ -9,12 +9,13 @@ from api.models import *
 
 from api.serializer import *
 
-from rest_framework.decorators import api_view, action
+from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework.response import Response
 from rest_framework import generics, viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 
 # Create your views here.
@@ -81,8 +82,28 @@ def MessageView(request, room_name, username):
 
     get_messages = ChatMessage.objects.filter(room=get_room)
 
+    messages_data = []
+    for message in get_messages:
+        message_data = {
+            'id': message.id,
+            "message": message.message,
+            "date": message.date,
+            "room": message.room.id,
+            "sender": message.sender
+        }
+        messages_data.append(message_data)
+
+    message_serializer = MessageSerializer(data=messages_data, many=True)
+    # json_data = JSONRenderer().render(message_serializer.data)
+
+    if message_serializer.is_valid():
+        json_data = message_serializer.data
+    else:
+        json_data = {"error": message_serializer.errors}
+    
+
     context = {
-        "messages": get_messages,
+        "messages": json_data,
         "user": username,
         "room_name": room_name
     }
@@ -93,25 +114,58 @@ def TestMessageView(request, room_name):
    
     get_room = Room.objects.get(room_name=room_name)
 
-    get_messages = ChatMessage.objects.filter(room=get_room)
+    get_messages = (ChatMessage.objects.filter(room=get_room))
 
-    message_serializer = MessageSerializer(get_messages, many=True)
-    json_data = JSONRenderer().render(message_serializer.data)
+    # print(get_messages)
 
+    messages_data = []
+    for message in get_messages:
+        message_data = {
+            'id': message.id,
+            "message": message.message,
+            "date": message.date,
+            "room": message.room.id,
+            "sender": message.sender
+        }
+        messages_data.append(message_data)
+
+    print(messages_data)
+
+    # messages_data = [message.serialize() for message in get_messages]
+
+    message_serializer = MessageSerializer(data=messages_data, many=True)
+    # json_data = JSONRenderer().render(message_serializer.data)
+
+    if message_serializer.is_valid():
+        json_data = message_serializer.data
+    else:
+        json_data = {"error": message_serializer.errors}
+    
     context = {
         "messages": json_data,
-        "user": 'no one',
+        "user": 'guest',
         "room_name": room_name
     }
 
     return JsonResponse(context)
 
-def TestRoomView(request):
-    get_room = Room.objects.all().values()
-    print(get_room)
+# def TestRoomView(request):
+#     rooms_list = list(Room.objects.all().values())
+#     print(rooms_list)
 
-    context = {
-        "rooms": get_room
-    }
+#     room_serializer = RoomSerializer(data=rooms_list, many=True)
 
-    return JsonResponse(context)
+#     if room_serializer.is_valid():
+#         json_data = room_serializer.data
+#     else:
+#         json_data = {"error": room_serializer.errors}
+    
+#     return JsonResponse(json_data, safe=False)
+
+class TestRoomView(APIView):
+    def get(self, request, format=None):
+        rooms_list = Room.objects.all()
+        room_serializer = RoomSerializer(rooms_list, many=True)
+        return Response(room_serializer.data)
+
+

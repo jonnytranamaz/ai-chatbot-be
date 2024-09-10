@@ -1,7 +1,8 @@
 from django.urls import include, path
 from . import views
 from rest_framework.routers import DefaultRouter
-from api.views import GetMesages, SendMessages
+from rest_framework.urlpatterns import format_suffix_patterns
+from api.views import *
 # from rest_framework_simplejwt.views import (
 #     TokenRefreshView,
 # )
@@ -11,11 +12,11 @@ router.register(r'receive', GetMesages, basename='post')
 
 
 urlpatterns = [
-    path('', include(router.urls)),
+    # path('', include(router.urls)),
     path('create-room', views.CreateRoom, name='create-room'),
-    #path('<str:room_name>/<str:username>/', views.MessageView, name='room'),
+    path('room/<str:room_name>/<str:username>/', views.MessageView, name='room'),
     path('test-room1/<str:room_name>/', views.TestMessageView, name="test-message-view"),
-    path('test-room2/', views.TestRoomView, name="test-room")
+    path('test-room2/', views.TestRoomView.as_view(), name="test-room")
     
     
     # path('token/', views.MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -40,3 +41,4 @@ urlpatterns = [
 
 ]
 
+urlpatterns = format_suffix_patterns(urlpatterns)
