@@ -5,6 +5,12 @@ from api.models import *
 import asyncio
 import httpx
 from api.constants import *
+from groq import Groq
+import os
+client = Groq(
+    api_key=os.environ.get("GROQ_API_KEY"),
+)
+
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -74,19 +80,30 @@ class TestConsumer(AsyncWebsocketConsumer):
         data = event['message']
         # await self.create_message(data=data)
 
-        print(f'Data2: {data['message']['text']}')
+        print(f'Data2: {data['message']}')
 
         json_data = {
-            'message': data['message']['text']
+            'message': data['message']['message']
         }
         api_url = api_nlu_address
 
-        response = await self.call_nlu_api(api_url, json_data)
+        # response = await self.call_nlu_api(api_url, json_data)
+        # print(f"response: {response}")
 
-        print(f"response: {response}")
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "user",
+                    "content": 'Explain the importance of fast language models' #data['message']['message'],
+                }
+            ],
+            model="llama3-8b-8192",
+        )
+        print(f'chat_completion: {chat_completion}')
+        
         response_data = {
             #'sender': data['sender'],
-            'message': response[0]['text'] #data['message']
+            'message': chat_completion.choices[0].message.content # response[0]['text'] #data['message']
         }
         await self.send(text_data=json.dumps({'message': response_data}))
 

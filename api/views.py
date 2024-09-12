@@ -6,18 +6,19 @@ from django.db.models import OuterRef, Subquery
 from django.db.models import Q
 
 from api.models import *
-
 from api.serializer import *
 
-from rest_framework.decorators import api_view, action, permission_classes
+from rest_framework.decorators import api_view, action, permission_classes, authentication_classes
 from rest_framework.response import Response
 from rest_framework import generics, viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework import status
+from rest_framework import status, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
-
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.authentication import JWTAuthentication
+import time
 # Create your views here.
 
 urlpatterns = [
@@ -48,26 +49,26 @@ class GetMesages(viewsets.ModelViewSet):
 class SendMessages(generics.CreateAPIView):
     serializer_class = MessageSerializer
 
-def CreateRoom(request):
-    if request.method == 'POST':
-        username = request.POST['username']
-        room = request.POST['room']
+# def CreateRoom(request):
+#     if request.method == 'POST':
+#         username = request.POST['username']
+#         room = request.POST['room']
 
-        try:
-            get_room = Room.objects.get(room_name=room)
-            room_serializers = RoomSerializer(get_room, many=True)
-            json_data = JSONRenderer().render(room_serializers.data)
-            return HttpResponse(json_data, content_type='applicaton/json')
+#         try:
+#             get_room = Room.objects.get(room_name=room)
+#             room_serializers = RoomSerializer(get_room, many=True)
+#             json_data = JSONRenderer().render(room_serializers.data)
+#             return HttpResponse(json_data, content_type='applicaton/json')
         
-        except Room.DoesNotExist:
-            new_room = Room(room_name=room)
-            new_room.save()
-            room_serializers = RoomSerializer(new_room, many=True)
-            json_data = JSONRenderer().render(room_serializers.data)
-            return HttpResponse(json_data, content_type='applicaton/json')
+#         except Room.DoesNotExist:
+#             new_room = Room(room_name=room)
+#             new_room.save()
+#             room_serializers = RoomSerializer(new_room, many=True)
+#             json_data = JSONRenderer().render(room_serializers.data)
+#             return HttpResponse(json_data, content_type='applicaton/json')
         
-    data = {'status': 'error', 'message': 'Error Methods'} 
-    return JsonResponse(data) 
+#     data = {'status': 'error', 'message': 'Error Methods'} 
+#     return JsonResponse(data) 
 
 def MessageView(request, room_name, username):
     get_room = Room.objects.get(room_name=room_name)
@@ -168,4 +169,88 @@ class TestRoomView(APIView):
         room_serializer = RoomSerializer(rooms_list, many=True)
         return Response(room_serializer.data)
 
+@api_view(['GET'])
+@permission_classes((permissions.AllowAny,))
+def TestRoomView2(request):
+    room_list = Room.objects.all()
+    room_serializer = RoomSerializer(room_list, many=True)
+    return Response(room_serializer.data)
+
+#Login User
+class MyTokenObtainPairView(TokenObtainPairView):
+    serializer_class = MyTokenObtainPairSerializer
+
+    # def get_tokens(self):
+    #     tokens = super().get_tokens()
+    #     refresh = tokens['refresh']
+    #     access = tokens['access']
+    #     return {'refresh': str(refresh), 'access': str(access)}
+    
+    # def validate(self, attrs):
+    #     data = super().validate(attrs)
+    #     refresh = self.get_token(self.user)
+    #     data['refresh'] = str(refresh)
+    #     return data
+
+#Register User
+class RegisterView(generics.CreateAPIView):
+    queryset = CustomUser.objects.all()
+    permission_classes = (AllowAny,)
+    serializer_class = RegisterSerializer
+
+#api/profile 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated,])
+@authentication_classes([JWTAuthentication,])
+def getProfile(request):
+    user = request.user
+    serializer = ProfileSerializer(user, many=False)
+    return Response(serializer.data)
+
+#api/v1//profile/update
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication,])
+def updateProfile(request):
+    user = request.user
+    serializer = ProfileSerializer(user, data=request.data, partial=True)
+    if serializer.is_valid():
+        serializer.save()
+    return Response(serializer.data)
+
+#api/v1/user/<int:pk>/rooms
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication,])
+def getUserRooms(request, pk):
+    user = CustomUser.objects.get(id=pk)
+    rooms = Room.objects.filter(user=user)
+    serializer = RoomSerializer(rooms, many=True)
+    return Response(serializer.data)
+
+#api/notes
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# def getNotes(request):
+#     public_notes = Note.objects.filter(is_public=True).order_by('-updated')[:10]
+#     user_notes = request.user.notes.all().order_by('-updated')[:10]
+#     notes = public_notes | user_notes
+#     serializer = NoteSerializer(notes, many=True)
+#     return Response(serializer.data)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication,])
+def createRoom(request):
+    user = request.user
+    data = request.data
+
+    room = Room.objects.create(
+        user = user,
+        body=data['body'],
+        room_name=f'{int(time.time() * 1000)}'
+    )
+
+    room_serializer = RoomSerializer(room, many=False)
+    return Response(room_serializer.data)
 

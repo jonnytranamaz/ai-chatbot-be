@@ -30,6 +30,14 @@ class RoomAdmin(admin.ModelAdmin):
     list_display = ['room_name']
     # list_display_links = ['room_name']
 
+class CustomUserAdmin(admin.ModelAdmin):
+    # list_editable = ['username', 'email', 'bio', 'is_staff', 'date_joined']
+    list_display = ['username', 'email', 'bio', 'is_staff', 'date_joined', 'full_name',]
+    list_display_links = ['username', 'email', 'bio', 'is_staff', 'date_joined', 'full_name',]
+
+
 admin.site.register(ChatMessage,ChatMessageAdmin)
 
 admin.site.register(Room, RoomAdmin)
+
+admin.site.register(CustomUser, CustomUserAdmin)
