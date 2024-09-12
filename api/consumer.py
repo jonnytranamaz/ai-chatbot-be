@@ -80,7 +80,7 @@ class TestConsumer(AsyncWebsocketConsumer):
         data = event['message']
         # await self.create_message(data=data)
 
-        print(f'Data2: {data['message']}')
+        print(f"Data2: {data['message']}")
 
         json_data = {
             'message': data['message']['message']
