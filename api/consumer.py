@@ -81,31 +81,37 @@ class TestConsumer(AsyncWebsocketConsumer):
         data = event['message']
         # await self.create_message(data=data)
 
-        # print(f"Data2: {data['message']}")
+        # print(f"Data2: {data['message']['message']}")
 
         json_data = {
             'message': data['message']['message']
         }
         api_url = api_nlu_address
 
-        # response = await self.call_nlu_api(api_url, json_data)
+        response = await self.call_nlu_api(api_url, json_data)
+        print(f'response: {response}')
+        if len(response)==0:
+            text_response = "you need to send more information! This case ins't define by developer"
+        else:
+            text_response = response[0]['text']
         # print(f"response: {response}")
 
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {
-                    "role": "user",
-                    "content": 'Explain the importance of fast language models' #data['message']['message'],
-                }
-            ],
-            model="llama3-8b-8192",
-        )
-        print(f'chat_completion: {chat_completion}')
+        # chat_completion = client.chat.completions.create(
+        #     messages=[
+        #         {
+        #             "role": "user",
+        #             "content": 'Explain the importance of fast language models' #data['message']['message'],
+        #         }
+        #     ],
+        #     model="llama3-8b-8192",
+        # )
+        # print(f'chat_completion: {chat_completion}')
         
         response_data = {
             #'sender': data['sender'],
-            'message': chat_completion.choices[0].message.content # response[0]['text'] #data['message']
+            'message': text_response # data['message'] # chat_completion.choices[0].message.content # 
         }
+
         await self.send(text_data=json.dumps({'message': response_data}))
 
     async def call_nlu_api(self, url, data):
