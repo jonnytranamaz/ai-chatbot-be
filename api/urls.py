@@ -14,7 +14,7 @@ router.register(r'receive', GetMesages, basename='post')
 
 urlpatterns = [
     # path('', include(router.urls)),
-    path('rooms/create-room', views.createRoom, name='create-room'),
+    # path('rooms/create-room', views.createRoom, name='create-room'),
     path('room/<str:room_name>/<str:username>/', views.MessageView, name='room'),
     path('test-room1/<str:room_name>/', views.TestMessageView, name="test-message-view"),
     path('test-room2/', views.TestRoomView.as_view(), name="test-room"),
@@ -29,11 +29,16 @@ urlpatterns = [
 
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair2'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh2'),
+    path('guest/login/', views.guest_login, name='guest-login'),
+    path('rooms/create-guest-room/', views.create_guest_room, name='create-guest-room'),
+
+    #Message
+    path('messages/guest/get-old-message/<str:room_name>/', views.get_all_message_of_guest_in_specific_room, name='get-all-message-of-guest-in-specific-room'),
 
     #Profile
     path('profile/', views.getProfile, name='profile'),
     path('profile/update/', views.updateProfile, name='update-profile'),
-    path('users/<int:pk>/rooms', views.getUserRooms, name='user-room')
+    # path('users/<int:pk>/rooms', views.getUserRooms, name='user-room')
 
     # # Get profile
     # path("profile/<int:pk>/", views.ProfileDetail.as_view()),

@@ -7,6 +7,7 @@ import httpx
 from api.constants import *
 from groq import Groq
 import os
+
 client = Groq(
     api_key=os.environ.get("GROQ_API_KEY"),
 )
@@ -54,7 +55,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 class TestConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.room_name = f"room_test"
+        self.room_name = f"{self.scope['url_route']['kwargs']['room_name']}"
         await self.channel_layer.group_add(self.room_name, self.channel_name)
         await self.accept()
         
@@ -80,7 +81,7 @@ class TestConsumer(AsyncWebsocketConsumer):
         data = event['message']
         # await self.create_message(data=data)
 
-        print(f"Data2: {data['message']}")
+        # print(f"Data2: {data['message']}")
 
         json_data = {
             'message': data['message']['message']

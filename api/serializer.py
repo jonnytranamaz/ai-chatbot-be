@@ -228,3 +228,7 @@ class ProfileSerializer(serializers.ModelSerializer):
                 cleaned_data[key] = value
         return super().to_internal_value(cleaned_data)
     
+class CustomGuestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomGuest
+        fields = '__all__'

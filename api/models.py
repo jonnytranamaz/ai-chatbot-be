@@ -127,9 +127,18 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return self.username
 
+class CustomGuest(models.Model):
+    fullname = models.CharField(max_length=100)
+    age = models.PositiveIntegerField()
+    telephone = models.CharField(unique=True, max_length=100)
+
+    def __str__(self) -> str:
+        return self.telephone
+ 
 class Room(models.Model):
-    room_name = models.CharField(max_length=255)
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True, related_name='rooms')
+    room_name = models.CharField(max_length=255, unique=True)
+    # user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True, related_name='rooms')
+    user = models.ForeignKey(CustomGuest, on_delete=models.CASCADE, null=True, blank=True, related_name='rooms')
     def __str__(self):
         return self.room_name
     
@@ -150,5 +159,7 @@ class ChatMessage(models.Model):
     def __str__(self) -> str:
         return f"{self.message} - {self.date}"
     
+   
+
 
 

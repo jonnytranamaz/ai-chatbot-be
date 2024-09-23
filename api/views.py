@@ -18,6 +18,7 @@ from rest_framework.response import Response
 from rest_framework.renderers import JSONRenderer
 from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from api.auth_backends import *
 import time
 # Create your views here.
 
@@ -219,14 +220,14 @@ def updateProfile(request):
     return Response(serializer.data)
 
 #api/v1/user/<int:pk>/rooms
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-@authentication_classes([JWTAuthentication,])
-def getUserRooms(request, pk):
-    user = CustomUser.objects.get(id=pk)
-    rooms = Room.objects.filter(user=user)
-    serializer = RoomSerializer(rooms, many=True)
-    return Response(serializer.data)
+# @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
+# @authentication_classes([JWTAuthentication,])
+# def getUserRooms(request, pk):
+#     user = CustomUser.objects.get(id=pk)
+#     rooms = Room.objects.filter(user=user)
+#     serializer = RoomSerializer(rooms, many=True)
+#     return Response(serializer.data)
 
 #api/notes
 # @api_view(['GET'])
@@ -238,19 +239,109 @@ def getUserRooms(request, pk):
 #     serializer = NoteSerializer(notes, many=True)
 #     return Response(serializer.data)
 
+# @api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+# @authentication_classes([JWTAuthentication,])
+# def createRoom(request):
+#     user = request.user
+#     data = request.data
+
+#     room = Room.objects.create(
+#         user = user,
+#         body=data['body'],
+#         room_name=f'{int(time.time() * 1000)}'
+#     )
+
+#     room_serializer = RoomSerializer(room, many=False)
+#     return Response(room_serializer.data)
+
 @api_view(['POST'])
-@permission_classes([IsAuthenticated])
-@authentication_classes([JWTAuthentication,])
-def createRoom(request):
-    user = request.user
-    data = request.data
+@permission_classes([AllowAny])
+def guest_login(request):
+    telephone = request.data.get('telephone')
 
-    room = Room.objects.create(
-        user = user,
-        body=data['body'],
-        room_name=f'{int(time.time() * 1000)}'
-    )
+    try:
+        existed_guest = CustomGuest.objects.get(telephone=telephone)
+        return Response({'telephone': existed_guest.telephone}, status=status.HTTP_202_ACCEPTED)
+    except:
+        serializer = CustomGuestSerializer(data=request.data)
+        if serializer.is_valid():
+            new_guest = serializer.save()
+            return Response({'telephone': new_guest.telephone}, status=status.HTTP_201_CREATED)
+        
+    return Response({'telephone': -1}, status=status.HTTP_400_BAD_REQUEST)
+    # {
+    #     'telephone': "013",
+    #     'fullname': "micheal ang",
+    #     'age': '23'
+    # }
 
-    room_serializer = RoomSerializer(room, many=False)
-    return Response(room_serializer.data)
+@api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
+# @authentication_classes([CustomTelephoneAuthentication])
+def create_guest_room(request):
+    telephone = request.data.get('telephone')
+    print(request.data)
+
+    try:
+        guest = CustomGuest.objects.get(telephone=telephone)
+        room = Room.objects.get(user=guest)
+        response_data = {'room_name': room.room_name}
+        status_code = status.HTTP_200_OK
+    except CustomGuest.DoesNotExist:
+        return Response({'message': 'Guest not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Room.DoesNotExist:
+        new_room = Room.objects.create(user=guest, room_name=f'room_{guest.telephone}')
+        response_data = {'room_name': new_room.room_name}
+        status_code = status.HTTP_201_CREATED
+    except Exception as e:
+        response_data = {'message': 'Error creating room'}
+        status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+
+    return Response(response_data, status=status_code)
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def get_all_message_of_guest_in_specific_room(request, room_name):
+   
+
+    try:
+
+        room = Room.objects.filter(room_name=room_name)
+        messages = ChatMessage.objects.get(room=room)
+        message_serializer = MessageSerializer(messages)
+        # response_data = {'message': 'success', 'list_message': message_serializer.data}
+        response_data = message_serializer.data
+        
+        status_code = status.HTTP_200_OK
+        return JsonResponse(response_data)
+   
+    except Room.DoesNotExist:
+        return Response({'message': 'room not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        print(e)
+        response_data = {'message': 'some errors occur'}
+        status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+
+    return Response(response_data, status=status_code)
+
+    #  telephone = request.data.get('telephone')
+
+    # try:
+    #     guest = CustomGuest.objects.get(telephone=telephone)
+    #     room = Room.objects.get(user=guest)
+    #     messages = ChatMessage.objects.get(room=room)
+    #     message_serializer = MessageSerializer(messages, many=True)
+    #     response_data = {'message': 'success', 'list_message': message_serializer.data}
+    #     status_code = status.HTTP_200_OK
+    # except CustomGuest.DoesNotExist:
+    #     return Response({'message': 'Guest not found'}, status=status.HTTP_404_NOT_FOUND)
+    # except Room.DoesNotExist:
+    #     return Response({'message': 'room not found'}, status=status.HTTP_404_NOT_FOUND)
+    # except Exception as e:
+    #     response_data = {'message': 'Some Error occur'}
+    #     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+
+    # return Response(response_data, status=status_code)
 
