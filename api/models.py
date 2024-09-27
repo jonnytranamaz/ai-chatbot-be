@@ -159,6 +159,40 @@ class ChatMessage(models.Model):
     def __str__(self) -> str:
         return f"{self.message} - {self.date}"
     
+
+# Cac models chinh thuc
+class Conversation(models.Model):
+    user = models.ForeignKey(CustomGuest, on_delete=models.CASCADE, related_name='conversations')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Conversation {self.id} by {self.user.username}"
+    
+class Message(models.Model):
+    OWNER_TYPE_CHOICES = [
+        ('enduser', 'End User'),
+        ('bo_user', 'Back Office User'),
+        ('bot', 'Bot'),
+    ]
+    MESSAGE_TYPE_CHOICES = [
+        ('text', 'Text'),
+        ('image', 'Image'),
+        ('file', 'File'),
+    ]
+
+    sender = models.ForeignKey(CustomGuest, on_delete=models.SET_NULL, null=True, blank=True, related_name='sent_messages')  # Sender can be user
+    owner_type = models.CharField(max_length=255, choices=OWNER_TYPE_CHOICES, default='bot')
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
+    timestamp = models.DateTimeField(auto_now_add=True)
+    content = models.TextField(blank=True)
+    image = models.ImageField(upload_to='images/', null=True, blank=True)
+    file = models.FileField(upload_to='files/', null=True, blank=True)
+    message_type = models.CharField(max_length=255, choices=MESSAGE_TYPE_CHOICES, default='text')
+
+    def __str__(self):
+        return f"Message {self.id} in Conversation {self.conversation.id} by {self.sender.username if self.sender else 'Bot'}"
+
+
    
 
 
