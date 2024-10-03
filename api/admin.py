@@ -46,3 +46,7 @@ admin.site.register(CustomUser, CustomUserAdmin)
 
 admin.site.register(CustomGuest, CustomGuestAdmin)
 
+admin.site.register(Message)
+
+admin.site.register(Conversation)
+

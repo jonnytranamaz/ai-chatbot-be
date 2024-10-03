@@ -7,12 +7,24 @@ import httpx
 from api.constants import *
 from groq import Groq
 import os
+from django.http import JsonResponse
+from rasa.core.agent import Agent
+from rasa.shared.core.domain import Domain
+from rasa.shared.core.trackers import DialogueStateTracker
+from rasa.core.policies.policy import PolicyPrediction
+#from rasa.core.interpreter import RasaNLUInterpreter
+from rasa.core.channels.channel import UserMessage
 
 client = Groq(
     api_key=os.environ.get("GROQ_API_KEY"),
 )
 
 
+# Load RASA Model
+model_path = os.path.join("/Users/tranminhtriet/Documents/GitHub/ai-chatbot-be/api/ai-models/20240923-152654-jolly-chablis.tar.gz")
+
+# Assuming you have trained the RASA model and have it saved
+agent = Agent.load(model_path)
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_name = f"room_{self.scope['url_route']['kwargs']['room_name']}"
@@ -86,14 +98,21 @@ class TestConsumer(AsyncWebsocketConsumer):
         json_data = {
             'message': data['message']['message']
         }
+        json_data2 = {
+            'text': data['message']['message']  # 'Explain the importance of fast language models'
+        }
         api_url = api_nlu_address
 
-        response = await self.call_nlu_api(api_url, json_data)
-        print(f'response: {response}')
-        if len(response)==0:
-            text_response = "you need to send more information! This case ins't define by developer"
-        else:
-            text_response = response[0]['text']
+        #parsed_data = await agent.parse_message( data['message']['message'] )#
+        parsed_data = await agent.handle_text(json_data2)
+
+        print('parsed_data: ',parsed_data)
+        # response = await self.call_nlu_api(api_url, json_data)
+        # print(f'response: {response}')
+        # if len(response)==0:
+        #     text_response = "you need to send more information! This case ins't define by developer"
+        # else:
+        #     text_response = response[0]['text']
         # print(f"response: {response}")
 
         # chat_completion = client.chat.completions.create(
@@ -109,7 +128,7 @@ class TestConsumer(AsyncWebsocketConsumer):
         
         response_data = {
             #'sender': data['sender'],
-            'message': text_response # data['message'] # chat_completion.choices[0].message.content # 
+            'message': parsed_data #text_response # data['message'] # chat_completion.choices[0].message.content # 
         }
 
         await self.send(text_data=json.dumps({'message': response_data}))
@@ -118,6 +137,27 @@ class TestConsumer(AsyncWebsocketConsumer):
         async with httpx.AsyncClient() as client:
             response = await client.post(url, json=data)
             return response.json()
+    
+
+
+
+# def rasa_parse_message(request):
+#     if request.method == 'POST':
+#         user_message = request.POST.get('message', '')
+
+#         if user_message:
+#             # Parse the message using the loaded RASA model
+#             # This will parse the message and predict the intent and action
+#             parsed_data = agent.handle_text(user_message)
+
+#             # Return the parsed RASA response as JSON
+#             return JsonResponse(parsed_data, safe=False)
+#         else:
+#             return JsonResponse({"error": "No message provided"}, status=400)
+#     return JsonResponse({"error": "Invalid request method"}, status=405)
+
+        
+
     # @database_sync_to_async
     # def create_message(self, data):
 
