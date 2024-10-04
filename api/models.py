@@ -166,7 +166,7 @@ class Conversation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Conversation {self.id} by {self.user.username}"
+        return f"Conversation {self.id} by {self.user.telephone}"
     
 class Message(models.Model):
     OWNER_TYPE_CHOICES = [
