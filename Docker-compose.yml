@@ -11,7 +11,7 @@ services:
       - "9002:9002"  # Map port 8000 inside the container to port 9002 on the host
     environment:
       - DJANGO_SETTINGS_MODULE=ai_chatbot_be.settings  # Replace 'backend' with your Django project name
-      - DTABASE_URL=postgres://postgres:Intern2024@db:5432/amaz_ai_chatbot
+      - DATABASE_URL=postgres://postgres:Intern2024@db:5432/amaz_ai_chatbot
 
       # - POSTGRES_DB=notesapp
       # - POSTGRES_USER=ki3ani
@@ -35,6 +35,12 @@ services:
     networks:
       - all
 
+networks:
+  all:
+    driver: bridge
+    driver_opts:
+      com.docker.network.enable_ipv6: "true"
+
 #  db:
   # image: ai-chatbot
   # volumes:
@@ -47,8 +53,3 @@ services:
 # volumes:
 #   postgres_data:
 
-networks:
-  all:
-    driver: bridge
-    driver_opts:
-      com.docker.network.enable_ipv6: "true"
