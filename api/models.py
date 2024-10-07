@@ -190,7 +190,7 @@ class Message(models.Model):
     message_type = models.CharField(max_length=255, choices=MESSAGE_TYPE_CHOICES, default='text')
 
     def __str__(self):
-        return f"Message {self.id} in Conversation {self.conversation.id} by {self.sender.username if self.sender else 'Bot'}"
+        return f"Message {self.id} in Conversation {self.conversation.id} by {self.sender.telephone if self.sender else 'Bot'}"
 
 
    
