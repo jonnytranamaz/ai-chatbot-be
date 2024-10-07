@@ -6,12 +6,27 @@ import asyncio
 import httpx
 from api.constants import *
 from groq import Groq
+from celery import shared_task
 import os
+from django.http import JsonResponse
+from django.conf import settings
 
-client = Groq(
-    api_key=os.environ.get("GROQ_API_KEY"),
-)
+from rasa.core.agent import Agent
+from rasa.shared.core.domain import Domain
+from rasa.shared.core.trackers import DialogueStateTracker
+from rasa.core.policies.policy import PolicyPrediction
+#from rasa.core.interpreter import RasaNLUInterpreter
+from rasa.core.channels.channel import UserMessage
 
+# client = Groq(
+#     api_key=os.environ.get("GROQ_API_KEY"),
+# )
+
+# Load RASA Model
+model_path = os.path.join(settings.BASE_DIR, "api", "nlu-models", "20241005-204958-joint-array.tar.gz")
+
+# Assuming you have trained the RASA model and have it saved
+agent = Agent.load(model_path)
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -86,10 +101,21 @@ class TestConsumer(AsyncWebsocketConsumer):
         json_data = {
             'message': data['message']['message']
         }
-        api_url = api_nlu_address
-
-        response = await self.call_nlu_api(api_url, json_data)
-        print(f'response: {response}')
+        json_data_parse = {
+            'text': data['message']['message']
+        }
+        
+        parsed_data = await agent.handle_text(json_data_parse)
+        print('parsed_data: ', parsed_data)
+        # To parse text
+        # response_parse_message = await self.call_nlu_api(api_parse_message, json_data_parse)
+        #print(f'response_parse_message: {response_parse_message}')
+        # TestConsumer.saveSymptomEntity.delay(response_parse_message)
+        
+        # await self.saveSymptomEntity(parsed_data)
+      
+        response = await self.call_nlu_api(api_get_message, json_data)
+        # print(f'response: {response}')
         if len(response)==0:
             text_response = "you need to send more information! This case ins't define by developer"
         else:
@@ -106,6 +132,8 @@ class TestConsumer(AsyncWebsocketConsumer):
         #     model="llama3-8b-8192",
         # )
         # print(f'chat_completion: {chat_completion}')
+
+        await self.saveChatTurn(data['message']['message'], text_response)
         
         response_data = {
             #'sender': data['sender'],
@@ -127,5 +155,22 @@ class TestConsumer(AsyncWebsocketConsumer):
     #         new_message = ChatMessage(room=get_room_by_name, sender=data['sender'], message=data['message'])
     #         new_message.save()  
          
-       
-       
+
+
+    # 
+    # @shared_task
+    # @staticmethod
+    @database_sync_to_async
+    def saveChatTurn(self, request, response):
+        chatTurn = ChatTurn(user_request=request, bot_response=response)
+        chatTurn.save()
+
+    @database_sync_to_async
+    def saveSymptomEntity(self, json):
+        entities = json.get('entities')
+        # print(entities)
+        for entity in entities:
+            if (entity.get('entity') == 'symptom'):
+                # print(entity.get('value'))
+                symptom = Symptom(name= entity.get('value'))
+                symptom.save()

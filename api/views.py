@@ -20,6 +20,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from api.auth_backends import *
 import time
+from django.core.paginator import Paginator
 # Create your views here.
 
 urlpatterns = [
@@ -193,9 +194,10 @@ class MyTokenObtainPairView(TokenObtainPairView):
     #     data['refresh'] = str(refresh)
     #     return data
 
+# CHANGE MODEL HERE
 #Register User
 class RegisterView(generics.CreateAPIView):
-    queryset = CustomUser.objects.all()
+    queryset = CustomGuest2.objects.all() # CustomUser.objects.all()#
     permission_classes = (AllowAny,)
     serializer_class = RegisterSerializer
 
@@ -276,46 +278,58 @@ def guest_login(request):
     #     'age': '23'
     # }
 
-@api_view(['POST'])
-# @permission_classes([IsAuthenticated])
-@permission_classes([AllowAny])
-# @authentication_classes([CustomTelephoneAuthentication])
-def create_guest_room(request):
-    telephone = request.data.get('telephone')
-    print(request.data)
+# @api_view(['POST'])
+# # @permission_classes([IsAuthenticated])
+# @permission_classes([AllowAny])
+# # @authentication_classes([CustomTelephoneAuthentication])
+# def create_guest_room(request):
+#     telephone = request.data.get('telephone')
+#     print(request.data)
 
-    try:
-        guest = CustomGuest.objects.get(telephone=telephone)
-        room = Room.objects.get(user=guest)
-        response_data = {'room_name': room.room_name}
-        status_code = status.HTTP_200_OK
-    except CustomGuest.DoesNotExist:
-        return Response({'message': 'Guest not found'}, status=status.HTTP_404_NOT_FOUND)
-    except Room.DoesNotExist:
-        new_room = Room.objects.create(user=guest, room_name=f'room_{guest.telephone}')
-        response_data = {'room_name': new_room.room_name}
-        status_code = status.HTTP_201_CREATED
-    except Exception as e:
-        response_data = {'message': 'Error creating room'}
-        status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+#     try:
+#         guest = CustomGuest.objects.get(telephone=telephone)
+#         room = Room.objects.get(user=guest)
+#         response_data = {'room_name': room.room_name}
+#         status_code = status.HTTP_200_OK
+#     except CustomGuest.DoesNotExist:
+#         return Response({'message': 'Guest not found'}, status=status.HTTP_404_NOT_FOUND)
+#     except Room.DoesNotExist:
+#         new_room = Room.objects.create(user=guest, room_name=f'room_{guest.telephone}')
+#         response_data = {'room_name': new_room.room_name}
+#         status_code = status.HTTP_201_CREATED
+#     except Exception as e:
+#         response_data = {'message': 'Error creating room'}
+#         status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
 
-    return Response(response_data, status=status_code)
+#     return Response(response_data, status=status_code)
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
-def get_all_message_of_guest_in_specific_room(request, room_name):
-   
-
+@permission_classes([IsAuthenticated,])
+@authentication_classes([JWTAuthentication,])
+def get_all_message_in_specific_room(request, room_name):
+    page = request.GET.get('page', 1)
+    limit = request.GET.get('limit', 20)
     try:
 
-        room = Room.objects.filter(room_name=room_name)
-        messages = ChatMessage.objects.get(room=room)
-        message_serializer = MessageSerializer(messages)
+        room = Room.objects.get(room_name=room_name)
+        messages = ChatMessage.objects.filter(room=room).order_by('-date')
+
+        paginator = Paginator(messages, limit)
+        paginated_messages = paginator.get_page(page)
+
+        message_serializer = MessageSerializer(paginated_messages, many=True) # MessageSerializer(messages) #
         # response_data = {'message': 'success', 'list_message': message_serializer.data}
-        response_data = message_serializer.data
+        # response_data = message_serializer.data
         
         status_code = status.HTTP_200_OK
-        return JsonResponse(response_data)
+        response_data = {
+            'messsage': 'success',
+            'messages': message_serializer.data,
+            'page': page,
+            'limit': limit,
+            'total_pages': paginator.num_pages,
+            'total_messages': paginator.count,
+        }
    
     except Room.DoesNotExist:
         return Response({'message': 'room not found'}, status=status.HTTP_404_NOT_FOUND)
@@ -345,3 +359,49 @@ def get_all_message_of_guest_in_specific_room(request, room_name):
 
     # return Response(response_data, status=status_code)
 
+@api_view(['POST'])
+# @permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
+# @authentication_classes([CustomTelephoneAuthentication])
+def create_custom_guest2(request):
+    telephone = request.data.get('telephone')
+    password = request.data.get('password')
+    age = request.data.get('age')
+    fullname = request.data.get('fullname')
+    try:
+        guest = CustomGuest2.objects.get(telephone=telephone)
+        response_data = {'message': 'telephone have already existed'}
+        status_code = status.HTTP_409_CONFLICT
+    except CustomGuest2.DoesNotExist:
+        new_guest = CustomGuest2.objects.create(telephone=telephone, age=age, fullname=fullname, username=telephone)
+        new_guest.set_password(password)
+        new_guest.save()
+        response_data = {'message': 'success', 'telephone': new_guest.telephone}
+        status_code = status.HTTP_201_CREATED      
+    except Exception as e:
+        print(e)
+        response_data = {'message': 'some errors occur'}
+        status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    return Response(response_data, status=status_code)
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated,])
+@authentication_classes([JWTAuthentication,])
+# @authentication_classes([CustomTelephoneAuthentication])
+def create_guest2_room(request):
+    user = request.user
+    try:
+        room = Room.objects.get(user=user)
+        response_data = {'room_name': room.room_name}
+        status_code = status.HTTP_200_OK
+    except CustomGuest2.DoesNotExist:
+        return Response({'message': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+    except Room.DoesNotExist:
+        new_room = Room.objects.create(user=user, room_name=f'room_{user.telephone}_{int(time.time() * 1000)}')
+        response_data = {'room_name': new_room.room_name}
+        status_code = status.HTTP_201_CREATED
+    except Exception as e:
+        response_data = {'message': 'Error creating room'}
+        status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+
+    return Response(response_data, status=status_code)

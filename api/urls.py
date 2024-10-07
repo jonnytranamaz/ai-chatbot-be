@@ -22,18 +22,19 @@ urlpatterns = [
     
     path('authenticate/token/login/', views.MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('authenticate/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    
     path('user/register/', views.RegisterView.as_view(), name='auth_register'),
+    path('user/signup/', views.create_custom_guest2, name='create-custom-guest2'),
+    path('rooms/create-guest2-room/', views.create_guest2_room, name='create-guest2-room'),
     # path('test/', views.testEndPoint, name='test'),
     # path('', views.getRoutes),
 
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair2'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh2'),
     path('guest/login/', views.guest_login, name='guest-login'),
-    path('rooms/create-guest-room/', views.create_guest_room, name='create-guest-room'),
+    #path('rooms/create-guest-room/', views.create_guest_room, name='create-guest-room'),
 
     #Message
-    path('messages/guest/get-old-message/<str:room_name>/', views.get_all_message_of_guest_in_specific_room, name='get-all-message-of-guest-in-specific-room'),
+    path('messages/get-old-message/<str:room_name>/', views.get_all_message_in_specific_room, name='get-all-message-of-guest-in-specific-room'),
 
     #Profile
     path('profile/', views.getProfile, name='profile'),

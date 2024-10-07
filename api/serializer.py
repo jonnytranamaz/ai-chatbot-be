@@ -107,6 +107,8 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from api.auth_backends import *
+
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChatMessage
@@ -131,86 +133,85 @@ class RoomSerializer(serializers.ModelSerializer):
     #     return instance
 User = get_user_model()
 
-class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
-    username_field = User.USERNAME_FIELD
-    email = serializers.EmailField(required=True)
+# class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+#     username_field = User.USERNAME_FIELD
+#     email = serializers.EmailField(required=True)
 
-    def validate(self, attrs: Dict[str, Any]) -> Dict[str, str]:
-        email = attrs.get('email')
-        password = attrs.get('password')
-        user = User.objects.get(email=email)
+#     def validate(self, attrs: Dict[str, Any]) -> Dict[str, str]:
+#         email = attrs.get('email')
+#         password = attrs.get('password')
+#         user = User.objects.get(email=email)
 
-        try:
-            user = User.objects.get(email=email)
+#         try:
+#             user = User.objects.get(email=email)
 
-            if user.check_password(password):
-                refresh = RefreshToken.for_user(user)
-                data = {
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token)
-                }
-                return data
-            else:
-                raise serializers.ValidationError("Invalid Credentials")
-        except User.DoesNotExist as e:
-            print(e)
+#             if user.check_password(password):
+#                 refresh = RefreshToken.for_user(user)
+#                 data = {
+#                     'refresh': str(refresh),
+#                     'access': str(refresh.access_token)
+#                 }
+#                 return data
+#             else:
+#                 raise serializers.ValidationError("Invalid Credentials")
+#         except User.DoesNotExist as e:
+#             print(e)
 
-        return super().validate(attrs)
-    # @classmethod
-    # def get_token(cls, user):
-    #     token = super().get_token(user)
+#         return super().validate(attrs)
+#     # @classmethod
+#     # def get_token(cls, user):
+#     #     token = super().get_token(user)
 
-    #     # Add custom claims
+#     #     # Add custom claims
         
-    #     # token['username'] = user.username
-    #     token['email'] = user.email
+#     #     # token['username'] = user.username
+#     #     token['email'] = user.email
         
-    #     return token
+#     #     return token
     
-    # def validate(self, attrs):
-    #     data = super().validate(attrs)
-    #     refresh = self.get_token(self.user)
-    #     data['refresh'] = str(refresh)
+#     # def validate(self, attrs):
+#     #     data = super().validate(attrs)
+#     #     refresh = self.get_token(self.user)
+#     #     data['refresh'] = str(refresh)
 
-    #     data['access'] = str(refresh.access_token)
+#     #     data['access'] = str(refresh.access_token)
 
-    #     return data
+#     #     return data
 
-
-class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(
-        write_only=True, required=True, validators=[validate_password])
+# class RegisterSerializer(serializers.ModelSerializer):
+#     password = serializers.CharField(
+#         write_only=True, required=True, validators=[validate_password])
     
-    password2 = serializers.CharField(write_only=True, required=True)
+#     password2 = serializers.CharField(write_only=True, required=True)
 
-    email = serializers.EmailField(
-        required=True,
-        validators=[UniqueValidator(queryset=CustomUser.objects.all())]
-    )
+#     email = serializers.EmailField(
+#         required=True,
+#         validators=[UniqueValidator(queryset=CustomUser.objects.all())]
+#     )
 
-    class Meta:
-        model = CustomUser
-        fields = ('username', 'email', 'password', 'password2', 'bio', 'full_name')
+#     class Meta:
+#         model = CustomUser
+#         fields = ('username', 'email', 'password', 'password2', 'bio', 'full_name')
 
-    def validate(self, attrs):
-        if attrs['password'] != attrs['password2']:
-            raise serializers.ValidationError(
-                {"password": "Password fields didn't match."})
+#     def validate(self, attrs):
+#         if attrs['password'] != attrs['password2']:
+#             raise serializers.ValidationError(
+#                 {"password": "Password fields didn't match."})
 
-        return attrs
+#         return attrs
 
-    def create(self, validated_data):
-        user = CustomUser.objects.create(
-            username=validated_data['username'],
-            email=validated_data['email'],
-            bio=validated_data['bio'],
-            full_name=validated_data['full_name'],
-        )
+#     def create(self, validated_data):
+#         user = CustomUser.objects.create(
+#             username=validated_data['username'],
+#             email=validated_data['email'],
+#             bio=validated_data['bio'],
+#             full_name=validated_data['full_name'],
+#         )
 
-        user.set_password(validated_data['password'])
-        user.save()
+#         user.set_password(validated_data['password'])
+#         user.save()
 
-        return user
+#         return user
 
 class ProfileSerializer(serializers.ModelSerializer):
     # messages = MessageSerializer(many=True, read_only=True)
@@ -232,3 +233,86 @@ class CustomGuestSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomGuest
         fields = '__all__'
+
+# class CustomGuest2Serializer(serializers.ModelSerializer):
+#     class Meta:
+#         models = CustomGuest2
+#         fields = '__all__'
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    username_field = User.USERNAME_FIELD
+    telephone = serializers.CharField(required=True)
+
+    def validate(self, attrs: Dict[str, Any]) -> Dict[str, str]:
+        telephone = attrs.get('telephone')
+        password = attrs.get('password')
+        # user = User.objects.get(telephone=telephone)
+        
+        try:
+            user = User.objects.get(telephone=telephone)
+            #print('user MyTokenObtainPairSerializer: ', user)   
+            credentials = {
+                "telephone": attrs.get("telephone"),
+                "password": attrs.get("password"),
+            }
+
+            user = TelephoneBackend2().authenticate(self.context["request"], **credentials)
+            #print('user MyTokenObtain2: ', user)
+            refresh = RefreshToken.for_user(user)
+            data = {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token)
+            }
+            return data
+            # if user.check_password(password):
+            #     refresh = RefreshToken.for_user(user)
+            #     data = {
+            #         'refresh': str(refresh),
+            #         'access': str(refresh.access_token)
+            #     }
+            #     return data
+            # else:
+            #     raise serializers.ValidationError("Invalid Credentials")
+
+        except User.DoesNotExist as e:
+            print(e)
+        except Exception as e:
+            print(e)
+
+        return super().validate(attrs)
+    
+class RegisterSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(
+        write_only=True, required=True, validators=[validate_password])
+    
+    # password2 = serializers.CharField(write_only=True, required=True)
+
+    telephone = serializers.CharField(
+        required=True,
+        validators=[UniqueValidator(queryset=CustomGuest2.objects.all())]
+    )
+
+    class Meta:
+        model = CustomGuest2
+        fields = ('username', 'telephone', 'age', 'password', 'fullname')
+
+    def validate(self, attrs):
+        # if attrs['password'] != attrs['password2']:
+        #     raise serializers.ValidationError(
+        #         {"password": "Password fields didn't match."})
+
+        return attrs
+
+    def create(self, validated_data):
+        user = CustomGuest2.objects.create(
+            username=validated_data['telephone'],
+            telephone=validated_data['telephone'],
+            fullname=validated_data['fullname'],
+            age=validated_data['age'],
+        )
+
+        user.set_password(validated_data['telephone'])
+        user.save()
+
+        return user
+

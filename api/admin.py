@@ -38,11 +38,17 @@ class CustomUserAdmin(admin.ModelAdmin):
 class CustomGuestAdmin(admin.ModelAdmin):
     list_display = ['telephone', 'fullname', 'age']
 
+class CustomGuest2Admin(admin.ModelAdmin):
+    # list_editable = ['username', 'email', 'bio', 'is_staff', 'date_joined']
+    list_display = ['username', 'age', 'telephone', 'is_staff', 'date_joined', 'fullname',]
+    list_display_links = ['username', 'age', 'telephone', 'is_staff', 'date_joined', 'fullname',]
+
 admin.site.register(ChatMessage,ChatMessageAdmin)
 
 admin.site.register(Room, RoomAdmin)
 
-admin.site.register(CustomUser, CustomUserAdmin)
+#admin.site.register(CustomUser, CustomUserAdmin)
 
 admin.site.register(CustomGuest, CustomGuestAdmin)
 
+admin.site.register(CustomGuest2, CustomGuest2Admin)

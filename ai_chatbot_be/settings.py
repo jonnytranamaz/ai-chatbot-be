@@ -55,21 +55,20 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
 
     # OAuth2
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
-    'djoser',
-    'social_django',
+    
     
 ]
 # 'django_socketio', 'socketio',
-
+# 'allauth',
+#     'allauth.account',
+#     'allauth.socialaccount',
+#     'allauth.socialaccount.providers.google',
+#     'djoser',
+#     'social_django',
 MIDDLEWARE = [
-    'social_django.middleware.SocialAuthExceptionMiddleware',
+    
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -77,10 +76,10 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
-    'allauth.account.middleware.AccountMiddleware',
-    
-]
 
+]
+# 'social_django.middleware.SocialAuthExceptionMiddleware',
+# 'allauth.account.middleware.AccountMiddleware',
 ROOT_URLCONF = 'ai_chatbot_be.urls'
 
 TEMPLATES = [
@@ -94,13 +93,14 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'social_django.context_processors.backends',
-                'social_django.context_processors.login_redirect'
+               
 
             ],
         },
     },
 ]
+#  'social_django.context_processors.backends',
+#  'social_django.context_processors.login_redirect'
 
 WSGI_APPLICATION = 'ai_chatbot_be.wsgi.application'
 
@@ -116,8 +116,22 @@ CHANNEL_LAYERS = {
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        # 'ENGINE': 'django.db.backends.postgresql',
+        # 'NAME': 'amaz_ai_chatbot',
+        # 'USER': 'postgres',
+        # 'PASSWORD': 'Intern2024',
+        # 'HOST': 'localhost',
+        # 'PORT': '5432'
+
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'amaz_ai_chatbot',
+        'USER': 'postgres',
+        'PASSWORD': '123456',
+        'HOST': 'localhost',
+        'PORT': '5432'
+
+        # 'ENGINE': 'django.db.backends.sqlite3',
+        # 'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -157,15 +171,17 @@ REST_FRAMEWORK = {
     ]
 }
 
-AUTH_USER_MODEL = 'api.CustomUser'
+# CHANGE MODEL HER
+AUTH_USER_MODEL = 'api.CustomGuest2' # 'api.CustomUser' #
 
 AUTHENTICATION_BACKENDS = [
-    'api.auth_backends.EmailBackend',
-    
-    'allauth.account.auth_backends.AuthenticationBackend'
+    'django.contrib.auth.backends.ModelBackend',  # Keep the default backend
+    'api.auth_backends.TelephoneBackend2',    # Add your custom backend
     ]
+#'api.auth_backends.EmailBackend',
 # 'api.auth_backends.TelephoneBackend',
-
+ # 
+# 'allauth.account.auth_backends.AuthenticationBackend'
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=180),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=50),
@@ -201,19 +217,19 @@ SIMPLE_JWT = {
 
 
 SITE_ID = 1
-SOCIALACCOUNT_LOGIN_ON_GET=True
+# SOCIALACCOUNT_LOGIN_ON_GET=True
 
-SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'SCOPE': [
-            'profile',
-            'email'
-        ],
-        'AUTH_PARAMS': {
-            'access_type': 'online',
-        }
-    }
-}
+# SOCIALACCOUNT_PROVIDERS = {
+#     'google': {
+#         'SCOPE': [
+#             'profile',
+#             'email'
+#         ],
+#         'AUTH_PARAMS': {
+#             'access_type': 'online',
+#         }
+#     }
+# }
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
