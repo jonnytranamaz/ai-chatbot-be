@@ -2,7 +2,7 @@ FROM python:3.10
 
 WORKDIR /app
 
-RUN python3 -m pip install rasa==3.5.0
+RUN python3 -m pip install --no-cache-dir rasa==3.5.0
 
 COPY requirements.txt .
 
