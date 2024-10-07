@@ -11,8 +11,13 @@ services:
       - "9002:9002"  # Map port 8000 inside the container to port 9002 on the host
     environment:
       - DJANGO_SETTINGS_MODULE=ai_chatbot_be.settings  # Replace 'backend' with your Django project name
-      - DATABASE_URL=postgres://postgres:Intern2024@db:5432/amaz_ai_chatbot
-
+      # - DATABASE_URL=postgres://postgres:Intern2024@db:5432/amaz_ai_chatbot
+      - POSTGRES_DB=amaz_ai_chatbot
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=Intern2024
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      
       # - POSTGRES_DB=notesapp
       # - POSTGRES_USER=ki3ani
       # - POSTGRES_PASSWORD=omniman2023

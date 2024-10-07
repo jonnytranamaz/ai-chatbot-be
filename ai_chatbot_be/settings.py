@@ -120,7 +120,7 @@ DATABASES = {
         'NAME': 'amaz_ai_chatbot',
         'USER': 'postgres',
         'PASSWORD': 'Intern2024',
-        'HOST': 'localhost',
+        'HOST': 'db',
         'PORT': '5432'
 
         # 'ENGINE': 'django.db.backends.postgresql',
