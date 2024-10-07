@@ -2,7 +2,9 @@ from ..models import Conversation
 
 class ConversationRepository:
     def create_conversation(self, user):
-        conversation = Conversation(user=user)
+        print(f"Creating conversation for user: {user}")  # Print statement to check the user
+        conversation = Conversation(user=user)  # This will be mocked during testing
+        print(f"Conversation created: {conversation}")  # Print statement to verify creation
         conversation.save()
         return conversation
     
