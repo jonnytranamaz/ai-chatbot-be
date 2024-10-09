@@ -1,5 +1,5 @@
 # repositories/message_repository.py
-from ..models import Message
+from api.models import Message
 
 
 class MessageRepository:

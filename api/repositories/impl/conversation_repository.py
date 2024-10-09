@@ -1,9 +1,10 @@
-from ..models import Conversation
+from api.repositories.i_conversation_repository import IConversationRepository
+from api.models import Conversation
 
-class ConversationRepository:
+class ConversationRepository(IConversationRepository):
     def create_conversation(self, user):
         print(f"Creating conversation for user: {user}")  # Print statement to check the user
-        conversation = Conversation(user=user)  # This will be mocked during testing
+        conversation = Conversation(sender=user)  # This will be mocked during testing
         print(f"Conversation created: {conversation}")  # Print statement to verify creation
         conversation.save()
         return conversation
