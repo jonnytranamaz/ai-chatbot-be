@@ -8,6 +8,7 @@ from api.constants import *
 from groq import Groq
 import os
 from django.http import JsonResponse
+from django.utils.timezone import now
 
 # client = Groq(
 #     api_key=os.environ.get("GROQ_API_KEY"),
@@ -95,8 +96,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
     
     @database_sync_to_async
     def saveChatTurn(self, request, response):
-        chatTurn = ChatTurn(user_request=request, bot_response=response)
-        chatTurn.save()
+        user_message = Message(timestamp =now,content=request, owner_type='enduser', message_type='text')
+        user_message.save()
+        bot_message = Message(content=response, owner_type='bot')
+        bot_message.save()
 
     @database_sync_to_async
     def saveSymptomEntity(self, json):
