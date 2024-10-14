@@ -9,9 +9,14 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+import environ
 from pathlib import Path
 from datetime import timedelta
+
+
+# Init environ
+env = environ.Env()
+environ.Env.read_env()  # Read .env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -55,18 +60,11 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
 
     # OAuth2
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
-    'djoser',
-    'social_django',
     
 ]
 # 'django_socketio', 'socketio',
 
 MIDDLEWARE = [
-    'social_django.middleware.SocialAuthExceptionMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
 
@@ -77,7 +75,6 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 
-    'allauth.account.middleware.AccountMiddleware',
     
 ]
 
@@ -94,8 +91,6 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'social_django.context_processors.backends',
-                'social_django.context_processors.login_redirect'
 
             ],
         },
@@ -114,12 +109,26 @@ CHANNEL_LAYERS = {
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+
+
 DATABASES = {
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': BASE_DIR / 'db.sqlite3',
+    # }
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': env('DB_NAME'),         
+        'USER': env('DB_USER'),         
+        'PASSWORD': env('DB_PASSWORD'), 
+        'HOST': env('DB_HOST', default='localhost'), 
+        'PORT': env('DB_PORT', default='5432'),     
     }
+
 }
+
+# Read env variable GROQ_API_KEY
+GROQ_API_KEY = env('GROQ_API_KEY')
 
 
 # Password validation
@@ -160,9 +169,8 @@ REST_FRAMEWORK = {
 AUTH_USER_MODEL = 'api.CustomUser'
 
 AUTHENTICATION_BACKENDS = [
-    'api.auth_backends.EmailBackend',
-    
-    'allauth.account.auth_backends.AuthenticationBackend'
+    'django.contrib.auth.backends.ModelBackend',  # Keep the default backend
+    'api.auth_backends.TelephoneBackend',
     ]
 # 'api.auth_backends.TelephoneBackend',
 
@@ -199,21 +207,6 @@ SIMPLE_JWT = {
     'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
 }
 
-
-SITE_ID = 1
-SOCIALACCOUNT_LOGIN_ON_GET=True
-
-SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'SCOPE': [
-            'profile',
-            'email'
-        ],
-        'AUTH_PARAMS': {
-            'access_type': 'online',
-        }
-    }
-}
 
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'

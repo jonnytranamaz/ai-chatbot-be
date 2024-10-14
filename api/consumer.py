@@ -7,60 +7,27 @@ import httpx
 from api.constants import *
 from groq import Groq
 import os
+from django.http import JsonResponse
 
-client = Groq(
-    api_key=os.environ.get("GROQ_API_KEY"),
-)
+# client = Groq(
+#     api_key=os.environ.get("GROQ_API_KEY"),
+# )
 
+
+# Load RASA Model
+#model_path = os.path.join("/Users/tranminhtriet/Documents/GitHub/ai-chatbot-be/api/ai-models/20240923-152654-jolly-chablis.tar.gz")
+
+# Assuming you have trained the RASA model and have it saved
+#agent = Agent.load(model_path)
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.room_name = f"room_{self.scope['url_route']['kwargs']['room_name']}"
-        await self.channel_layer.group_add(self.room_name, self.channel_name)
+        self.conversation_id = f"{self.scope['url_route']['kwargs']['conversation_id']}"
+        await self.channel_layer.group_add(self.conversation_id, self.channel_name)
         await self.accept()
         
     async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(self.room_name, self.channel_name)
-
-    async def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        message = text_data_json
-
-        event = {
-            'type': 'send_message',
-            'message': message,
-        }
-
-        await self.channel_layer.group_send(self.room_name, event)
-
-    async def send_message(self, event):
-
-        data = event['message']
-        await self.create_message(data=data)
-
-        response_data = {
-            'sender': data['sender'],
-            'message': data['message']
-        }
-        await self.send(text_data=json.dumps({'message': response_data}))
-
-    @database_sync_to_async
-    def create_message(self, data):
-
-        get_room_by_name = Room.objects.get(room_name=data['room_name'])
-        
-        if not ChatMessage.objects.filter(message=data['message']).exists():
-            new_message = ChatMessage(room=get_room_by_name, sender=data['sender'], message=data['message'])
-            new_message.save()  
-
-class TestConsumer(AsyncWebsocketConsumer):
-    async def connect(self):
-        self.room_name = f"{self.scope['url_route']['kwargs']['room_name']}"
-        await self.channel_layer.group_add(self.room_name, self.channel_name)
-        await self.accept()
-        
-    async def disconnect(self, close_code):
-        await self.channel_layer.group_discard(self.room_name, self.channel_name)
+        await self.channel_layer.group_discard(self.conversation_id, self.channel_name)
         pass 
 
     async def receive(self, text_data):
@@ -70,13 +37,13 @@ class TestConsumer(AsyncWebsocketConsumer):
         print(f'Data: {text_data}')
         
         event = {
-            'type': 'chat_message',
+            'type': 'message',
             'message': message #"This is Amaz Chatbot",
         }
 
-        await self.channel_layer.group_send(self.room_name, event)
+        await self.channel_layer.group_send(self.conversation_id, event)
 
-    async def chat_message(self, event):
+    async def message(self, event):
 
         data = event['message']
         # await self.create_message(data=data)
@@ -86,7 +53,12 @@ class TestConsumer(AsyncWebsocketConsumer):
         json_data = {
             'message': data['message']['message']
         }
+        json_data2 = {
+            'text': data['message']['message']  # 'Explain the importance of fast language models'
+        }
         api_url = api_nlu_address
+
+
 
         response = await self.call_nlu_api(api_url, json_data)
         print(f'response: {response}')
@@ -106,10 +78,12 @@ class TestConsumer(AsyncWebsocketConsumer):
         #     model="llama3-8b-8192",
         # )
         # print(f'chat_completion: {chat_completion}')
+
+        await self.saveChatTurn(data['message']['message'], text_response)
         
         response_data = {
             #'sender': data['sender'],
-            'message': text_response # data['message'] # chat_completion.choices[0].message.content # 
+            'message':  text_response #parsed_data #text_response # data['message'] # chat_completion.choices[0].message.content # 
         }
 
         await self.send(text_data=json.dumps({'message': response_data}))
@@ -118,14 +92,20 @@ class TestConsumer(AsyncWebsocketConsumer):
         async with httpx.AsyncClient() as client:
             response = await client.post(url, json=data)
             return response.json()
-    # @database_sync_to_async
-    # def create_message(self, data):
+    
+    @database_sync_to_async
+    def saveChatTurn(self, request, response):
+        chatTurn = ChatTurn(user_request=request, bot_response=response)
+        chatTurn.save()
 
-    #     get_room_by_name = Room.objects.get(room_name=data['room_name'])
-        
-    #     if not ChatMessage.objects.filter(message=data['message']).exists():
-    #         new_message = ChatMessage(room=get_room_by_name, sender=data['sender'], message=data['message'])
-    #         new_message.save()  
-         
-       
+    @database_sync_to_async
+    def saveSymptomEntity(self, json):
+        entities = json.get('entities')
+        # print(entities)
+        for entity in entities:
+            if (entity.get('entity') == 'symptom'):
+                # print(entity.get('value'))
+                symptom = Symptom(name= entity.get('value'))
+                symptom.save()
+
        

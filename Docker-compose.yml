@@ -1,28 +1,32 @@
-version: "3.8"  # Use the appropriate version of Docker Compose
+version: "3.8" # Use the appropriate version of Docker Compose
 
 services:
   django:
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile
     volumes:
       - .:/app
     ports:
-      - "9002:9002"  # Map port 8000 inside the container to port 9002 on the host
+      - "9002:9002" # Map port 8000 inside the container to port 9002 on the host
     environment:
-      - DJANGO_SETTINGS_MODULE=ai_chatbot_be.settings  # Replace 'backend' with your Django project name
-      - GROQ_API_KEY=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
-      
+      - DJANGO_SETTINGS_MODULE=ai_chatbot_be.settings # Replace 'backend' with your Django project name
       # - POSTGRES_DB=notesapp
       # - POSTGRES_USER=ki3ani
       # - POSTGRES_PASSWORD=omniman2023
       # - POSTGRES_HOST=db  # This should match the service name defined below
-  #   depends_on:
-  #     - db
+      #   depends_on:
+      #     - db
 
-  # db:
-  #   image: postgres:latest
-  #   environment:
-  #     - POSTGRES_DB=notesapp
-  #     - POSTGRES_USER=ki3ani
-  #     - POSTGRES_PASSWORD=omniman2023
+      # db:
+      #   image: postgres:latest
+      #   environment:
+      #     - POSTGRES_DB=notesapp
+      #     - POSTGRES_USER=ki3ani
+      #     - POSTGRES_PASSWORD=omniman2023
+  db:
+    image: ai-chatbot
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: heongusi22
