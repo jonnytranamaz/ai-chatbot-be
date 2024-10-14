@@ -15,7 +15,7 @@ from api.auth_backends import TelephoneBackend
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
-        fields = ['timestamp', 'content', 'conversation']
+        fields = ['timestamp', 'content', 'conversation', 'owner_type', 'message_type']
 
 class ConversationSerializer(serializers.ModelSerializer):
     class Meta:
