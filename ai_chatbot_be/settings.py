@@ -14,8 +14,8 @@ from pathlib import Path
 from datetime import timedelta
 
 
-# Init environ
-#env = environ.Env()
+#Init environ
+# env = environ.Env()
 # environ.Env.read_env()  # Read .env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
