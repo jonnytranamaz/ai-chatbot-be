@@ -56,14 +56,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
         json_data2 = {
             'text': data['message']['message']  # 'Explain the importance of fast language models'
         }
-        api_url = api_nlu_address
+        api_url = api_get_message
 
 
 
         response = await self.call_nlu_api(api_url, json_data)
         print(f'response: {response}')
         if len(response)==0:
-            text_response = "you need to send more information! This case ins't define by developer"
+            text_response = "you need to send more information! This case isn't define by developer"
         else:
             text_response = response[0]['text']
         # print(f"response: {response}")
