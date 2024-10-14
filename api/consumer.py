@@ -96,10 +96,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
     
     @database_sync_to_async
     def saveChatTurn(self, request, response):
-        # user_message = Message(timestamp =now,content=request, owner_type='enduser', message_type='text')
-        # user_message.save()
-        # bot_message = Message(content=response, owner_type='bot')
-        # bot_message.save()
+        conversation = Conversation.objects.get(id=self.conversation_id)
+        user_message = Message(timestamp =now,content=request, owner_type='enduser', message_type='text', conversation=conversation )
+        user_message.save()
+        bot_message = Message(content=response, owner_type='bot', conversation=conversation, message_type='text')
+        bot_message.save()
         chat_turn = ChatTurn(user_request=request, bot_response=response)
         chat_turn.save()
 
