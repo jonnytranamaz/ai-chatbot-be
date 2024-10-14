@@ -9,14 +9,14 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-import environ
+# import environ
 from pathlib import Path
 from datetime import timedelta
 
 
 # Init environ
-env = environ.Env()
-environ.Env.read_env()  # Read .env
+#env = environ.Env()
+# environ.Env.read_env()  # Read .env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
