@@ -100,7 +100,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # user_message.save()
         # bot_message = Message(content=response, owner_type='bot')
         # bot_message.save()
-        chat_turn = ChatTurn(user_message=request, bot_message=response)
+        chat_turn = ChatTurn(user_request=request, bot_response=response)
         chat_turn.save()
 
     @database_sync_to_async
