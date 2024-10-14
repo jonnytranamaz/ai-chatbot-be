@@ -136,7 +136,7 @@ DATABASES = {
 }
 
 # Read env variable GROQ_API_KEY
-GROQ_API_KEY = env('GROQ_API_KEY')
+# GROQ_API_KEY = env('GROQ_API_KEY')
 
 
 # Password validation
