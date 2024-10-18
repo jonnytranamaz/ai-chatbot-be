@@ -9,6 +9,7 @@ from groq import Groq
 import os
 from django.http import JsonResponse
 from django.utils.timezone import now
+from api.externalservices.genai import GenerativeAIService
 
 # client = Groq(
 #     api_key=os.environ.get("GROQ_API_KEY"),
@@ -63,10 +64,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         response = await self.call_nlu_api(api_url, json_data)
         print(f'response: {response}')
-        if len(response)==0:
-            text_response = "you need to send more information! This case isn't define by developer"
+        print(f'response text: {response[0]["text"]}')
+        if response[0]["text"] == "Sorry, I can't handle that request.":
+            text_response = GenerativeAIService().get_response(json_data['message'])
+            print(f'genai response: {text_response}')
+            #print("I'm here")
+        # if len(response)==0:
+        #     text_response = "you need to send more information! This case isn't define by developer"
         else:
             text_response = response[0]['text']
+            print(f'NLU response: {text_response}')
         # print(f"response: {response}")
 
         # chat_completion = client.chat.completions.create(
@@ -113,5 +120,3 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 # print(entity.get('value'))
                 symptom = Symptom(name= entity.get('value'))
                 symptom.save()
-
-       
