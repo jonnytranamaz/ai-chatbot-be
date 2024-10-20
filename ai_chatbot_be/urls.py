@@ -24,4 +24,5 @@ urlpatterns = [
     path('api/v1/', include("api.urls")),
     # path('ws/', include("api.routing"))
     #path('api/v1/chatbot/', include('chatbot_api.urls')),
+    path('api/', include('api.urls')),
 ]

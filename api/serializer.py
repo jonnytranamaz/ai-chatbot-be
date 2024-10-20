@@ -95,3 +95,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.save()
 
         return user
+class ChatRequestSerializer(serializers.Serializer):
+    question = serializers.CharField(max_length=255)
+    answer = serializers.CharField(max_length=255)

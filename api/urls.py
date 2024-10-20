@@ -20,7 +20,7 @@ urlpatterns = [
     #Message
     path('messages/get-old-message/<str:conversation_id>/', views.get_all_message_in_specific_conversation, name='get-all-message-of-user-in-specific-conversation'),
     
-
+    path('convertdata/', ConvertData.as_view(), name='convertdata'),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
