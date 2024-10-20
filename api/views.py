@@ -129,10 +129,8 @@ class ConvertData(APIView):
             question = serializer.validated_data['question']
             answer = serializer.validated_data['answer']
 
-            # Tải intents từ API thay vì từ CSV
-            intents = self.get_intents_from_api()  # Thực hiện phương thức này
+            intents = self.get_intents_from_api()
 
-            # Xử lý dữ liệu đầu vào
             self.process_data(intents, question, answer)
 
             return Response({"message": "Dữ liệu đã được thêm vào file thành công"}, status=status.HTTP_201_CREATED)
@@ -140,11 +138,10 @@ class ConvertData(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def get_intents_from_api(self):
-        # Thay thế bằng cuộc gọi API thực tế để lấy intents
         return []
 
     def process_data(self, intents, user_example, bot_response):
-        # Đường dẫn đến các tệp intent
+
         intent_files = {
             'booking': '../../../ai-chatbot-rasa-en/ai-chatbot-rasa-en/data/booking.yml',
             'doctor': '../../../ai-chatbot-rasa-en/ai-chatbot-rasa-en/data/doctor.yml',
@@ -166,17 +163,17 @@ class ConvertData(APIView):
                             examples.update(item['examples'].splitlines())
             return examples
 
-        # Nhận câu hỏi và câu trả lời từ người dùng
         question = user_example
         bot_response = bot_response
-
-        # Xác định intent từ câu hỏi
-        intent = get_intent_from_question(question)
-
+        intent = get_intent_from_question(question).strip()
+        print('intent',intent)
         if intent in intent_files:
             file_path = intent_files[intent]
             existing_examples = read_examples_from_file(file_path)
-        
+            if not os.path.exists(file_path) or os.path.getsize(file_path) == 0:
+                with open(file_path, 'w', encoding='utf-8') as file:
+                    file.write("nlu:\n- intent: {}\n  examples: |\n".format(intent))
+
             if question.strip() not in {example.lstrip('- ').strip() for example in existing_examples}:
                 with open(file_path, 'a', encoding='utf-8') as file:
                     file.write(f"    - {question.strip()}\n")
@@ -199,7 +196,6 @@ class ConvertData(APIView):
         for intent, response_list in responses.items():
             if intent not in domain_data.get('responses', {}):
                 domain_data.setdefault('responses', {})[intent] = []
-                
             for response in response_list:
                 if response not in domain_data['responses'][intent]:
                     domain_data['responses'][intent].append(response)
@@ -209,35 +205,27 @@ class ConvertData(APIView):
             domain_file.write("intents:\n")
             for intent in domain_data['intents']:
                 domain_file.write(f"  - {intent}\n")
-            
             domain_file.write("\nresponses:\n")
             for intent, response_list in domain_data['responses'].items():
                 domain_file.write(f"  {intent}:\n")
                 for response in response_list:
                     domain_file.write(f"  - text: \"{response['text']}\"\n") 
-
         stories_data = []
         existing_intents = set()  
         added_intents = set() 
-
         existing_stories = []
         if os.path.exists('../../../ai-chatbot-rasa-en/ai-chatbot-rasa-en/data/stories.yml'):
             with open('../../../ai-chatbot-rasa-en/ai-chatbot-rasa-en/data/stories.yml', 'r', encoding='utf-8') as stories_file:
                 existing_data = yaml.safe_load(stories_file)
                 if existing_data and 'stories' in existing_data:
                     existing_stories = existing_data['stories']
-                    # Lưu tất cả các intent đã có
                     for story in existing_stories:
                         for step in story['steps']:
                             intent = step.get('intent')
                             if intent:
                                 existing_intents.add(intent)
-
-        
-        intent = get_intent_from_question(question)
+        intent = get_intent_from_question(question).strip()
         action = f'utter_{intent}'
-
-            # Kiểm tra xem intent đã tồn tại hay chưa
         if intent not in existing_intents and intent not in added_intents:
             stories_data.append({
                 'story': f'story_{intent}', 
@@ -246,10 +234,7 @@ class ConvertData(APIView):
                     {'action': action}
                 ]
             })
-            added_intents.add(intent)  # Đánh dấu intent này đã được thêm
-
-
-        # Ghi theo định dạng dễ định dạng hơn
+            added_intents.add(intent)  
         with open('../../../ai-chatbot-rasa-en/ai-chatbot-rasa-en/data/stories.yml', 'a', encoding='utf-8') as stories_file:
             for story in stories_data:
                 stories_file.write(f"- story: {story['story']}\n")
