@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 # import environ
+import os
 from pathlib import Path
 from datetime import timedelta
 
@@ -105,17 +106,25 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels.layers.InMemoryChannelLayer"
     },
+    # "default": {
+    #     "BACKEND": "channels_redis.core.RedisChannelLayer",
+    #     "CONFIG": {
+    #         "hosts": [("127.0.0.1", 6379)],
+    #     },
+    # },
 }
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://redis:6379/0")
 
 
 DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.sqlite3',
-    #     'NAME': BASE_DIR / 'db.sqlite3',
-    # }
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+
     # 'default': {
     #     'ENGINE': 'django.db.backends.postgresql',
     #     'NAME': env('DB_NAME'),         
@@ -124,14 +133,15 @@ DATABASES = {
     #     'HOST': env('DB_HOST', default='localhost'), 
     #     'PORT': env('DB_PORT', default='5432'),     
     # }
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'amaz_ai_chatbot',
-        'USER': 'postgres',
-        'PASSWORD': 'Intern2024',
-        'HOST': 'db',
-        'PORT': '5432'
-    }
+
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.postgresql',
+    #     'NAME': 'amaz_ai_chatbot',
+    #     'USER': 'postgres',
+    #     'PASSWORD': 'Intern2024',
+    #     'HOST': 'db',
+    #     'PORT': '5432'
+    # }
 
 }
 
