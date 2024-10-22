@@ -124,6 +124,10 @@ def create_user_conversation(request):
 
 
 class ConvertData(APIView):
+    # Disable authentication and authorization
+    authentication_classes = []
+    permission_classes = []
+
     def post(self, request):
         serializer = ChatRequestSerializer(data=request.data)
         if serializer.is_valid():
