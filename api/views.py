@@ -29,6 +29,7 @@ import yaml
 import os
 from .serializers import ChatRequestSerializer
 from .train_intent import get_intent_from_question
+from .constants import intent_files
 
 
 #Login User
@@ -142,16 +143,7 @@ class ConvertData(APIView):
 
     def process_data(self, intents, user_example, bot_response):
 
-        intent_files = {
-            'booking': '../../../ai-chatbot-rasa-en/ai-chatbot-rasa-en/data/booking.yml',
-            'doctor': '../../../ai-chatbot-rasa-en/ai-chatbot-rasa-en/data/doctor.yml',
-            'clinic': '../../../ai-chatbot-rasa-en/ai-chatbot-rasa-en/data/clinic.yml',
-            'hospital': '../../../ai-chatbot-rasa-en/ai-chatbot-rasa-en/data/hospital.yml',
-            'symptom': '../../../ai-chatbot-rasa-en/ai-chatbot-rasa-en/data/symptom.yml',
-            'consultant': '../../../ai-chatbot-rasa-en/ai-chatbot-rasa-en/data/consultant.yml',
-            'patient': '../../../ai-chatbot-rasa-en/ai-chatbot-rasa-en/data/patient.yml',
-            'health': '../../../ai-chatbot-rasa-en/ai-chatbot-rasa-en/data/health.yml'
-        }
+        
 
         # read example of intent
         def read_examples_from_file(file_path):
@@ -188,8 +180,8 @@ class ConvertData(APIView):
         }
 
         # save into domain
-        if os.path.exists('../../../ai-chatbot-rasa-en/ai-chatbot-rasa-en/domain.yml'):
-            with open('../../../ai-chatbot-rasa-en/ai-chatbot-rasa-en/domain.yml', 'r', encoding='utf-8') as domain_file:
+        if os.path.exists(intent_files['domain']):
+            with open(intent_files['domain'], 'r', encoding='utf-8') as domain_file:
                 domain_data = yaml.safe_load(domain_file) or {}
 
         existing_intents = set(domain_data.get('intents', []))
@@ -203,7 +195,7 @@ class ConvertData(APIView):
                 if response not in domain_data['responses'][intent]:
                     domain_data['responses'][intent].append(response)
 
-        with open('../../../ai-chatbot-rasa-en/ai-chatbot-rasa-en/domain.yml', 'w', encoding='utf-8') as domain_file:
+        with open(intent_files['domain'], 'w', encoding='utf-8') as domain_file:
             domain_file.write("version: \"3.1\"\n\n")
             domain_file.write("intents:\n")
             for intent in domain_data['intents']:
@@ -219,8 +211,8 @@ class ConvertData(APIView):
         existing_intents = set()  
         added_intents = set() 
         existing_stories = []
-        if os.path.exists('../../../ai-chatbot-rasa-en/ai-chatbot-rasa-en/data/stories.yml'):
-            with open('../../../ai-chatbot-rasa-en/ai-chatbot-rasa-en/data/stories.yml', 'r', encoding='utf-8') as stories_file:
+        if os.path.exists(intent_files['stories']):
+            with open(intent_files['stories'], 'r', encoding='utf-8') as stories_file:
                 existing_data = yaml.safe_load(stories_file)
                 if existing_data and 'stories' in existing_data:
                     existing_stories = existing_data['stories']
@@ -240,7 +232,7 @@ class ConvertData(APIView):
                 ]
             })
             added_intents.add(intent)  
-        with open('../../../ai-chatbot-rasa-en/ai-chatbot-rasa-en/data/stories.yml', 'a', encoding='utf-8') as stories_file:
+        with open(intent_files['stories'], 'a', encoding='utf-8') as stories_file:
             for story in stories_data:
                 stories_file.write(f"- story: {story['story']}\n")
                 stories_file.write("  steps:\n")

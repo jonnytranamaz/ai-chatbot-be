@@ -60,12 +60,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         }
         api_url = api_get_message
 
-
-
         response = await self.call_nlu_api(api_url, json_data)
         print(f'response: {response}')
         print(f'response text: {response[0]["text"]}')
-        if response[0]["text"] == "Sorry, I can't handle that request.":
+        if len(response)==0 or response[0]["text"] == "Sorry, I can't handle that request.":
             text_response = GenerativeAIService().get_response(json_data['message'])
             print(f'genai response: {text_response}')
             #print("I'm here")
@@ -97,9 +95,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({'message': response_data}))
 
     async def call_nlu_api(self, url, data):
-        async with httpx.AsyncClient() as client:
-            response = await client.post(url, json=data)
-            return response.json()
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(url, json=data)
+                return response.json()
+        except Exception as e:
+            print(f'Error when calling to rasa: {e}')
+            return []
     
     @database_sync_to_async
     def saveChatTurn(self, request, response):
