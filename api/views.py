@@ -153,6 +153,7 @@ class ConvertData(APIView):
             'health': '../../../ai-chatbot-rasa-en/ai-chatbot-rasa-en/data/health.yml'
         }
 
+        # read example of intent
         def read_examples_from_file(file_path):
             examples = set()
             if os.path.exists(file_path):
@@ -163,6 +164,7 @@ class ConvertData(APIView):
                             examples.update(item['examples'].splitlines())
             return examples
 
+        # save into nlu - intent file
         question = user_example
         bot_response = bot_response
         intent = get_intent_from_question(question).strip()
@@ -185,6 +187,7 @@ class ConvertData(APIView):
             'responses': {}
         }
 
+        # save into domain
         if os.path.exists('../../../ai-chatbot-rasa-en/ai-chatbot-rasa-en/domain.yml'):
             with open('../../../ai-chatbot-rasa-en/ai-chatbot-rasa-en/domain.yml', 'r', encoding='utf-8') as domain_file:
                 domain_data = yaml.safe_load(domain_file) or {}
@@ -210,6 +213,8 @@ class ConvertData(APIView):
                 domain_file.write(f"  {intent}:\n")
                 for response in response_list:
                     domain_file.write(f"  - text: \"{response['text']}\"\n") 
+
+        # save into stories
         stories_data = []
         existing_intents = set()  
         added_intents = set() 
