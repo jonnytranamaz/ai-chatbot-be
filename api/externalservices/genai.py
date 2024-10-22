@@ -11,9 +11,9 @@ logger = logging.getLogger(__name__)
 class GenerativeAIService:
     def __init__(self):
         # Configure the API key
-        api_key = os.environ.get("API_KEY")
+        api_key = os.environ.get("GEMINI_API_KEY")
         if not api_key:
-            raise ValueError("API_KEY environment variable not set")
+            raise ValueError("GEMINI_API_KEY environment variable not set")
         genai.configure(api_key=api_key)
         
         # Initialize the model
