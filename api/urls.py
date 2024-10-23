@@ -24,3 +24,5 @@ urlpatterns = [
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
+
+# dùng endpoint khi initialize model
