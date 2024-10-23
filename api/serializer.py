@@ -15,7 +15,7 @@ from api.auth_backends import TelephoneBackend
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
-        fields = ['timestamp', 'content', 'conversation']
+        fields = ['timestamp', 'content', 'conversation', 'owner_type', 'message_type']
 
 class ConversationSerializer(serializers.ModelSerializer):
     class Meta:
@@ -95,3 +95,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.save()
 
         return user
+class ChatRequestSerializer(serializers.Serializer):
+    question = serializers.CharField(max_length=255)
+    answer = serializers.CharField(max_length=255)

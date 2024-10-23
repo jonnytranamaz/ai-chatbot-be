@@ -8,6 +8,8 @@ from api.constants import *
 from groq import Groq
 import os
 from django.http import JsonResponse
+from django.utils.timezone import now
+from api.externalservices.genai import GenerativeAIService
 
 # client = Groq(
 #     api_key=os.environ.get("GROQ_API_KEY"),
@@ -56,16 +58,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
         json_data2 = {
             'text': data['message']['message']  # 'Explain the importance of fast language models'
         }
-        api_url = api_nlu_address
-
-
+        api_url = api_get_message
 
         response = await self.call_nlu_api(api_url, json_data)
         print(f'response: {response}')
-        if len(response)==0:
-            text_response = "you need to send more information! This case ins't define by developer"
+        print(f'response text: {response[0]["text"]}')
+        if len(response)==0 or response[0]["text"] == "Sorry, I can't handle that request.":
+            text_response = GenerativeAIService().get_response(json_data['message'])
+            print(f'genai response: {text_response}')
+            #print("I'm here")
+        # if len(response)==0:
+        #     text_response = "you need to send more information! This case isn't define by developer"
         else:
             text_response = response[0]['text']
+            print(f'NLU response: {text_response}')
         # print(f"response: {response}")
 
         # chat_completion = client.chat.completions.create(
@@ -89,14 +95,23 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({'message': response_data}))
 
     async def call_nlu_api(self, url, data):
-        async with httpx.AsyncClient() as client:
-            response = await client.post(url, json=data)
-            return response.json()
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(url, json=data)
+                return response.json()
+        except Exception as e:
+            print(f'Error when calling to rasa: {e}')
+            return []
     
     @database_sync_to_async
     def saveChatTurn(self, request, response):
-        chatTurn = ChatTurn(user_request=request, bot_response=response)
-        chatTurn.save()
+        conversation = Conversation.objects.get(id=self.conversation_id)
+        user_message = Message(timestamp =now,content=request, owner_type='enduser', message_type='text', conversation=conversation )
+        user_message.save()
+        bot_message = Message(content=response, owner_type='bot', conversation=conversation, message_type='text')
+        bot_message.save()
+        chat_turn = ChatTurn(user_request=request, bot_response=response)
+        chat_turn.save()
 
     @database_sync_to_async
     def saveSymptomEntity(self, json):
@@ -107,5 +122,3 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 # print(entity.get('value'))
                 symptom = Symptom(name= entity.get('value'))
                 symptom.save()
-
-       

@@ -9,14 +9,15 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-import environ
+# import environ
+import os
 from pathlib import Path
 from datetime import timedelta
 
 
-# Init environ
-env = environ.Env()
-environ.Env.read_env()  # Read .env
+#Init environ
+# env = environ.Env()
+# environ.Env.read_env()  # Read .env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -105,30 +106,47 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels.layers.InMemoryChannelLayer"
     },
+    # "default": {
+    #     "BACKEND": "channels_redis.core.RedisChannelLayer",
+    #     "CONFIG": {
+    #         "hosts": [("127.0.0.1", 6379)],
+    #     },
+    # },
 }
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://redis:6379/0")
 
 
 DATABASES = {
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.sqlite3',
-    #     'NAME': BASE_DIR / 'db.sqlite3',
-    # }
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('DB_NAME'),         
-        'USER': env('DB_USER'),         
-        'PASSWORD': env('DB_PASSWORD'), 
-        'HOST': env('DB_HOST', default='localhost'), 
-        'PORT': env('DB_PORT', default='5432'),     
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
+
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.postgresql',
+    #     'NAME': env('DB_NAME'),         
+    #     'USER': env('DB_USER'),         
+    #     'PASSWORD': env('DB_PASSWORD'), 
+    #     'HOST': env('DB_HOST', default='localhost'), 
+    #     'PORT': env('DB_PORT', default='5432'),     
+    # }
+
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.postgresql',
+    #     'NAME': 'amaz_ai_chatbot',
+    #     'USER': 'postgres',
+    #     'PASSWORD': 'Intern2024',
+    #     'HOST': 'db',
+    #     'PORT': '5432'
+    # }
 
 }
 
 # Read env variable GROQ_API_KEY
-GROQ_API_KEY = env('GROQ_API_KEY')
+# GROQ_API_KEY = env('GROQ_API_KEY')
 
 
 # Password validation
