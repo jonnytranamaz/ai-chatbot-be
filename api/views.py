@@ -28,7 +28,7 @@ import pandas as pd
 import yaml
 import os
 from .serializer import ChatRequestSerializer
-from .train_intent import get_intent_from_question
+# from .train_intent import get_intent_from_question
 from .constants import intent_files
 
 
