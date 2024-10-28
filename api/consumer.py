@@ -10,7 +10,7 @@ import os
 from django.http import JsonResponse
 from django.utils.timezone import now
 from api.externalservices.genai import GenerativeAIService
-
+#from django_rabbitmq import publishers
 # client = Groq(
 #     api_key=os.environ.get("GROQ_API_KEY"),
 # )
@@ -63,15 +63,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
         response = await self.call_nlu_api(api_url, json_data)
         print(f'response: {response}')
         print(f'response text: {response[0]["text"]}')
-        if len(response)==0 or response[0]["text"] == "Sorry, I can't handle that request.":
-            text_response = GenerativeAIService().get_response(json_data['message'])
-            print(f'genai response: {text_response}')
-            #print("I'm here")
-        # if len(response)==0:
-        #     text_response = "you need to send more information! This case isn't define by developer"
-        else:
-            text_response = response[0]['text']
-            print(f'NLU response: {text_response}')
+        # if len(response)==0 or response[0]["text"] == "Sorry, I can't handle that request.":
+        #     text_response = GenerativeAIService().get_response(json_data['message'])
+        #     print(f'genai response: {text_response}')
+        #     #print("I'm here")
+        # # if len(response)==0:
+        # #     text_response = "you need to send more information! This case isn't define by developer"
+        # else:
+        text_response = response[0]['text']
+        print(f'NLU response: {text_response}')
         # print(f"response: {response}")
 
         # chat_completion = client.chat.completions.create(
@@ -87,6 +87,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         await self.saveChatTurn(data['message']['message'], text_response)
         
+        # # Connect to RabbitMQ and declare a queue
+        # publisher = publishers.Publisher(queue_name='training')
+
+        # # Send a message
+        # publisher.send_message('Need to train the model!')
+
         response_data = {
             #'sender': data['sender'],
             'message':  text_response #parsed_data #text_response # data['message'] # chat_completion.choices[0].message.content # 
@@ -97,7 +103,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def call_nlu_api(self, url, data):
         try:
             async with httpx.AsyncClient() as client:
-                response = await client.post(url, json=data)
+                response = await client.post(url, json=data, timeout=None)
                 return response.json()
         except Exception as e:
             print(f'Error when calling to rasa: {e}')

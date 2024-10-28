@@ -59,7 +59,7 @@ INSTALLED_APPS = [
     'groq',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
-
+    #'django_rabbitmq',
     # OAuth2
     
 ]
@@ -118,12 +118,20 @@ CHANNEL_LAYERS = {
 
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://redis:6379/0")
 
+# RABBITMQ_CONFIG = {
+#     'default': {
+#         'host': 'localhost',
+#         'port': 5672,
+#         'user': 'guest',
+#         'password': 'guest',
+#     },
+# }
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': BASE_DIR / 'db.sqlite3',
+    # }
 
     # 'default': {
     #     'ENGINE': 'django.db.backends.postgresql',
@@ -134,14 +142,14 @@ DATABASES = {
     #     'PORT': env('DB_PORT', default='5432'),     
     # }
 
-    # 'default': {
-    #     'ENGINE': 'django.db.backends.postgresql',
-    #     'NAME': 'amaz_ai_chatbot',
-    #     'USER': 'postgres',
-    #     'PASSWORD': 'Intern2024',
-    #     'HOST': 'db',
-    #     'PORT': '5432'
-    # }
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'amaz_ai_chatbot',
+        'USER': 'postgres',
+        'PASSWORD': 'Intern2024',
+        'HOST': '192.168.1.45',#'db',
+        'PORT': '5432'
+    }
 
 }
 
