@@ -64,7 +64,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         response = await self.call_nlu_api(api_url, json_data)
         print(f'response: {response}')
-        print(f'response text: {response[0]["text"]}')
+        if response and len(response) > 0:
+            print(f'response text: {response[0]["text"]}')
+        else:
+            print("No response received or response is empty.")
+
         if response[0]["text"] == "Sorry, I can't handle that request.":
             text_response = GenerativeAIService().get_response(json_data['message'])
             print(f'genai response: {text_response}')
