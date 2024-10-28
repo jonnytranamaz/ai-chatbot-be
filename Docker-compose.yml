@@ -32,6 +32,8 @@ services:
       - POSTGRES_PASSWORD=Intern2024
       - POSTGRES_HOST=localhost
       - POSTGRES_PORT=5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - all
 
