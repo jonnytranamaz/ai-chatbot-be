@@ -101,13 +101,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.send(text_data=json.dumps({'message': response_data}))
 
     async def call_nlu_api(self, url, data):
-        try:
-            async with httpx.AsyncClient() as client:
-                response = await client.post(url, json=data, timeout=None)
+     async with httpx.AsyncClient() as client:
+            try:
+                response = await client.post(url, json=data)
+                response.raise_for_status()  # Raise an exception for HTTP errors
                 return response.json()
-        except Exception as e:
-            print(f'Error when calling to rasa: {e}')
-            return []
+            except httpx.HTTPStatusError as e:
+                print(f"HTTP error occurred: {e}")
+                return []
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                return []
     
     @database_sync_to_async
     def saveChatTurn(self, request, response):
