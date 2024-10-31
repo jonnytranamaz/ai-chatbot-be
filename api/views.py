@@ -46,29 +46,41 @@ class RegisterView(generics.CreateAPIView):
 @permission_classes([IsAuthenticated,])
 @authentication_classes([JWTAuthentication,])
 def get_all_message_in_specific_conversation(request, conversation_id):
-    page = request.GET.get('page', 1)
-    limit = request.GET.get('limit', 20)
+    page = int(request.GET.get('page', 1))
+    limit = int(request.GET.get('limit', 20))
+    last_message_id = request.GET.get('last_message_id')
+
     try:
-
         conversation = Conversation.objects.get(id=conversation_id)
-        messages = Message.objects.filter(conversation=conversation).order_by('-timestamp')
+        
+        # Filter messages based on last_message_id
+        if last_message_id:
+            messages = Message.objects.filter(
+                conversation=conversation,
+                id__lt=last_message_id
+            ).order_by('-id')
+        else:
+            messages = Message.objects.filter(
+                conversation=conversation
+            ).order_by('-id')
 
+        # Apply pagination
         paginator = Paginator(messages, limit)
         paginated_messages = paginator.get_page(page)
 
-        message_serializer = MessageSerializer(paginated_messages, many=True) # MessageSerializer(messages) #
-  
-        
+        message_serializer = MessageSerializer(paginated_messages, many=True)
+
         status_code = status.HTTP_200_OK
         response_data = {
-            'messsage': 'success',
+            'message': 'success',
             'messages': message_serializer.data,
             'page': page,
             'limit': limit,
             'total_pages': paginator.num_pages,
             'total_messages': paginator.count,
+            'last_message_id': message_serializer.data[-1]['id'] if message_serializer.data else None  # ID của tin nhắn cuối
         }
-   
+
     except Conversation.DoesNotExist:
         return Response({'message': 'conversation not found'}, status=status.HTTP_404_NOT_FOUND)
     except Exception as e:
