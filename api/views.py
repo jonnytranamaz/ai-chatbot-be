@@ -45,7 +45,7 @@ class RegisterView(generics.CreateAPIView):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated,])
 @authentication_classes([JWTAuthentication,])
-def get_all_message_in_specific_conversation(request, conversation_id):
+def get_all_message_in_specific_conversation(request, conversation_id=None):
     page = int(request.GET.get('page', 1))
     limit = int(request.GET.get('limit', 20))
     last_message_id = request.GET.get('last_message_id')
@@ -57,7 +57,7 @@ def get_all_message_in_specific_conversation(request, conversation_id):
         if last_message_id:
             messages = Message.objects.filter(
                 conversation=conversation,
-                id__lt=last_message_id
+                id__lte=last_message_id
             ).order_by('-id')
         else:
             messages = Message.objects.filter(
