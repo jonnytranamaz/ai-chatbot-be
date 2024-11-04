@@ -48,21 +48,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def message(self, event):
 
         data = event['message']
-        # await self.create_message(data=data)
-
-        # print(f"Data2: {data['message']['message']}")
-
+        
         json_data = {
             'message': data['message']['message']
         }
-        json_data2 = {
-            'text': data['message']['message']  # 'Explain the importance of fast language models'
-        }
+        
         api_url = api_get_message
 
         response = await self.call_nlu_api(api_url, json_data)
         print(f'response: {response}')
-        print(f'response text: {response[0]["text"]}')
+        #print(f'response text: {response[0]["text"]}')
         # if len(response)==0 or response[0]["text"] == "Sorry, I can't handle that request.":
         #     text_response = GenerativeAIService().get_response(json_data['message'])
         #     print(f'genai response: {text_response}')
@@ -70,7 +65,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # # if len(response)==0:
         # #     text_response = "you need to send more information! This case isn't define by developer"
         # else:
-        text_response = response[0]['text']
+        if len(response)==0:
+            text_response = "you need to send more information! This case isn't define by developer"
+        else:
+            text_response = response[0]['text']
         print(f'NLU response: {text_response}')
         # print(f"response: {response}")
 

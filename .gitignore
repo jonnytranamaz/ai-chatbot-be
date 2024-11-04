@@ -162,3 +162,4 @@ cython_debug/
 #.idea/
 /images/
 /api/train_intent.py
+/api/intent_data.csv

@@ -146,8 +146,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'amaz_ai_chatbot',
         'USER': 'postgres',
-        'PASSWORD': 'Intern2024',
-        'HOST': '192.168.1.45',#'db',
+        'PASSWORD': '123456',#'Intern2024',
+        'HOST': 'localhost', #'192.168.1.45',#'db',
         'PORT': '5432'
     }
 
