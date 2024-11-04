@@ -21,6 +21,7 @@ from api.externalservices.genai import GenerativeAIService
 
 # Assuming you have trained the RASA model and have it saved
 #agent = Agent.load(model_path)
+generativeAIService = GenerativeAIService()
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -57,21 +58,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         response = await self.call_nlu_api(api_url, json_data)
         print(f'response: {response}')
-        #print(f'response text: {response[0]["text"]}')
-        # if len(response)==0 or response[0]["text"] == "Sorry, I can't handle that request.":
-        #     text_response = GenerativeAIService().get_response(json_data['message'])
-        #     print(f'genai response: {text_response}')
-        #     #print("I'm here")
-        # # if len(response)==0:
-        # #     text_response = "you need to send more information! This case isn't define by developer"
-        # else:
-        if len(response)==0:
-            text_response = "you need to send more information! This case isn't define by developer"
+        
+        if len(response)==0 or response[0]["text"] == "Sorry, I can't handle that request.":
+            try:
+                text_response = generativeAIService.get_response(json_data['message'])
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                text_response = "you need to send more information! This case isn't define by developer"
         else:
             text_response = response[0]['text']
         print(f'NLU response: {text_response}')
-        # print(f"response: {response}")
-
+       
         # chat_completion = client.chat.completions.create(
         #     messages=[
         #         {

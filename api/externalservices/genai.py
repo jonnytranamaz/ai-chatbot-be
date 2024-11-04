@@ -3,15 +3,17 @@ import os
 import time
 import random
 import logging
-
+from dotenv import load_dotenv
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+load_dotenv()
 
 class GenerativeAIService:
     def __init__(self):
         # Configure the API key
         api_key = os.environ.get("GEMINI_API_KEY")
+        print('api_key:', api_key)
         if not api_key:
             raise ValueError("GEMINI_API_KEY environment variable not set")
         genai.configure(api_key=api_key)
