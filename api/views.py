@@ -52,23 +52,22 @@ def get_all_message_in_specific_conversation(request, conversation_id):
 
     try:
         conversation = Conversation.objects.get(id=conversation_id)
+
+
+        all_messages = Message.objects.filter(conversation=conversation)
         
-        # Filter messages based on last_message_id
         if last_message_id:
-            messages = Message.objects.filter(
-                conversation=conversation,
-                id__lt=last_message_id
-            ).order_by('-id')
+            messages = all_messages.filter(id__lt=last_message_id).order_by('-id')[:limit]
         else:
-            messages = Message.objects.filter(
-                conversation=conversation
-            ).order_by('-id')
+            messages = all_messages.order_by('-id')[:limit]
 
-        # Apply pagination
+    
+        total_messages = all_messages.count()
         paginator = Paginator(messages, limit)
-        paginated_messages = paginator.get_page(page)
+        # total_pages = paginator.num_pages
+        total_pages = (total_messages + limit - 1) // limit
 
-        message_serializer = MessageSerializer(paginated_messages, many=True)
+        message_serializer = MessageSerializer(messages, many=True)
 
         status_code = status.HTTP_200_OK
         response_data = {
@@ -76,9 +75,9 @@ def get_all_message_in_specific_conversation(request, conversation_id):
             'messages': message_serializer.data,
             'page': page,
             'limit': limit,
-            'total_pages': paginator.num_pages,
-            'total_messages': paginator.count,
-            'last_message_id': message_serializer.data[-1]['id'] if message_serializer.data else None  # ID của tin nhắn cuối
+            'total_pages': total_pages,
+            'total_messages': total_messages,
+            'last_message_id': message_serializer.data[-1]['id'] if message_serializer.data else None  
         }
 
     except Conversation.DoesNotExist:
