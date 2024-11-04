@@ -116,7 +116,7 @@ CHANNEL_LAYERS = {
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", "redis://redis:6379/0")
+CELERY_BROKER_URL = 'amqp://guest:guest@localhost:5672//' # os.environ.get("CELERY_BROKER", "redis://redis:6379/0")
 
 # RABBITMQ_CONFIG = {
 #     'default': {
@@ -146,8 +146,8 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'amaz_ai_chatbot',
         'USER': 'postgres',
-        'PASSWORD': 'Intern2024',
-        'HOST': '192.168.1.45',#'db',
+        'PASSWORD': '123456', #'Intern2024',
+        'HOST': 'localhost', #'192.168.1.45',#'db',
         'PORT': '5432'
     }
 
