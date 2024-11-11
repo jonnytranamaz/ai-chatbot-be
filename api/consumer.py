@@ -81,32 +81,32 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # else:
         #env, try catch
         if len(response)==0 or response[0]["text"] == "Sorry, I can't handle that request.":
-            #text_response = "you need to send more information! This case isn't define by developer"
-            try:
-                chat_completion = await sync_to_async(client.chat.completions.create) (
-                    model="llama3.2:1b-instruct-ggml-fp16-linux",
-                    messages=[
-                        {
-                            "role": "user",
-                            "content": json_data['message'],
-                        }
-                    ],
-                    stream=False,
-                    timeout=httpx.Timeout(300.0), # Set the timeout to 300 seconds (5 minutes)
-                )
+            text_response = "you need to send more information! This case isn't define by developer"
+            # try:
+            #     chat_completion = await sync_to_async(client.chat.completions.create) (
+            #         model="llama3.2:1b-instruct-ggml-fp16-linux",
+            #         messages=[
+            #             {
+            #                 "role": "user",
+            #                 "content": json_data['message'],
+            #             }
+            #         ],
+            #         stream=False,
+            #         timeout=httpx.Timeout(300.0), # Set the timeout to 300 seconds (5 minutes)
+            #     )
 
-                print(chat_completion)
-                if (chat_completion is not None):
-                        #print(chat_completion.choices[0].message.content)
-                        text_response = chat_completion.choices[0].message.content
+            #     print(chat_completion)
+            #     if (chat_completion is not None):
+            #             #print(chat_completion.choices[0].message.content)
+            #             text_response = chat_completion.choices[0].message.content
 
-                        #await TrainingMessage(request=json_data['message'], response=text_response).save()
-                        await self.saveTrainingMessage(json_data['message'], text_response)
-                else:
-                    text_response = "Timeout when llm responses"
-            except Exception as e:
-                print(f"An error occurred: {e}")
-                text_response = "you need to send more information! This case isn't define by developer"
+            #             #await TrainingMessage(request=json_data['message'], response=text_response).save()
+            #             await self.saveTrainingMessage(json_data['message'], text_response)
+            #     else:
+            #         text_response = "Timeout when llm responses"
+            # except Exception as e:
+            #     print(f"An error occurred: {e}")
+            #     text_response = "you need to send more information! This case isn't define by developer"
 
         else:
              text_response = response[0]['text']
