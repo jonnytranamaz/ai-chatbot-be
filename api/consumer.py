@@ -101,7 +101,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
                         TrainingMessage(request=json_data['message'], response=text_response).save()
                 else:
-                    text_response = "you need to send more information! This case isn't define by developer"
+                    text_response = "Timeout when llm responses"
             except Exception as e:
                 print(f"An error occurred: {e}")
                 text_response = "you need to send more information! This case isn't define by developer"
