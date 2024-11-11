@@ -98,6 +98,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 if (chat_completion is not None):
                         #print(chat_completion.choices[0].message.content)
                         text_response = chat_completion.choices[0].message.content
+
+                        TrainingMessage(request=json_data['message'], response=text_response).save()
                 else:
                     text_response = "you need to send more information! This case isn't define by developer"
             except Exception as e:
