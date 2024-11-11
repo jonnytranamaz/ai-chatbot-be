@@ -57,7 +57,7 @@ def get_all_message_in_specific_conversation(request, conversation_id):
         all_messages = Message.objects.filter(conversation=conversation)
         
         if last_message_id:
-            messages = all_messages.filter(id__lt=last_message_id).order_by('-id')[:limit]
+            messages = all_messages.filter(id__lte=last_message_id).order_by('-id')[:limit]
         else:
             messages = all_messages.order_by('-id')[:limit]
 
