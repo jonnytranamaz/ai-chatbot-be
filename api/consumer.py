@@ -91,7 +91,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         }
                     ],
                     stream=False,
-                    timeout=httpx.Timeout(300.0),
+                    timeout=httpx.Timeout(900.0),
                 )
 
                 #print(chat_completion)
