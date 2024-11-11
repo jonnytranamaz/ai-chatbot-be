@@ -62,11 +62,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # print(f"Data2: {data['message']['message']}")
 
         json_data = {
+            'sender': self.conversation_id,
             'message': data['message']['message']
         }
-        json_data2 = {
-            'text': data['message']['message']  # 'Explain the importance of fast language models'
-        }
+        
         api_url = api_get_message
 
         response = await self.call_nlu_api(api_url, json_data)
