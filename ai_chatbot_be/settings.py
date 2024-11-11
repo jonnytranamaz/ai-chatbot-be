@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'groq',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'openai',
     #'django_rabbitmq',
     # OAuth2
     

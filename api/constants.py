@@ -14,3 +14,5 @@ intent_files = {
             'domain': '../../ai-chatbot-rasa-en/ai-chatbot-rasa-en/domain.yml',
             'stories': '../../ai-chatbot-rasa-en/ai-chatbot-rasa-en/data/stories.yml',
         }
+
+api_llm_address = 'http://192.168.1.45:3000'

@@ -10,6 +10,7 @@ import os
 from django.http import JsonResponse
 from django.utils.timezone import now
 from api.externalservices.genai import GenerativeAIService
+from openai import OpenAI
 #from django_rabbitmq import publishers
 # client = Groq(
 #     api_key=os.environ.get("GROQ_API_KEY"),
@@ -21,6 +22,13 @@ from api.externalservices.genai import GenerativeAIService
 
 # Assuming you have trained the RASA model and have it saved
 #agent = Agent.load(model_path)
+
+
+client = OpenAI(base_url=f'{api_llm_address}/v1', api_key='na')
+
+# Use the following func to get the available models
+# model_list = client.models.list()
+# print(model_list)
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -62,7 +70,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         response = await self.call_nlu_api(api_url, json_data)
         print(f'response: {response}')
-        print(f'response text: {response[0]["text"]}')
+        #print(f'response text: {response[0]["text"]}')
         # if len(response)==0 or response[0]["text"] == "Sorry, I can't handle that request.":
         #     text_response = GenerativeAIService().get_response(json_data['message'])
         #     print(f'genai response: {text_response}')
@@ -70,7 +78,32 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # # if len(response)==0:
         # #     text_response = "you need to send more information! This case isn't define by developer"
         # else:
-        text_response = response[0]['text']
+        #env, try catch
+        if len(response)==0 or response[0]["text"] == "Sorry, I can't handle that request.":
+            #text_response = "you need to send more information! This case isn't define by developer"
+            try:
+                chat_completion = client.chat.completions.create(
+                    model="llama3.2:1b-instruct-ggml-fp16-linux",
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": json_data['message'],
+                        }
+                    ],
+                    stream=False,
+                    timeout=httpx.Timeout(300.0),
+                )
+
+                #print(chat_completion)
+                if (chat_completion is not None):
+                        #print(chat_completion.choices[0].message.content)
+                        text_response = chat_completion.choices[0].message.content
+            except Exception as e:
+                print(f"An error occurred: {e}")
+                text_response = "you need to send more information! This case isn't define by developer"
+
+        else:
+             text_response = response[0]['text']
         print(f'NLU response: {text_response}')
         # print(f"response: {response}")
 

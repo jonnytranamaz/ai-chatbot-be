@@ -20,7 +20,7 @@ services:
     depends_on:
       - db
     networks:
-      - all
+      - shared_network
 
   db:
     image: postgres:latest
@@ -35,9 +35,11 @@ services:
     volumes:
       - data:/var/lib/postgresql/data
     networks:
-      - all
+      - shared_network
 
 networks:
+  shared_network:
+    external: true
   all:
     driver: bridge
     driver_opts:
