@@ -1,6 +1,7 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
+from asgiref.sync import sync_to_async
 from api.models import *
 import asyncio
 import httpx
@@ -74,7 +75,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # if len(response)==0 or response[0]["text"] == "Sorry, I can't handle that request.":
         #     text_response = GenerativeAIService().get_response(json_data['message'])
         #     print(f'genai response: {text_response}')
-        #     #print("I'm here")
+        #     
         # # if len(response)==0:
         # #     text_response = "you need to send more information! This case isn't define by developer"
         # else:
@@ -82,7 +83,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if len(response)==0 or response[0]["text"] == "Sorry, I can't handle that request.":
             #text_response = "you need to send more information! This case isn't define by developer"
             try:
-                chat_completion = client.chat.completions.create(
+                chat_completion = await sync_to_async(client.chat.completions.create) (
                     model="llama3.2:1b-instruct-ggml-fp16-linux",
                     messages=[
                         {
@@ -91,15 +92,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
                         }
                     ],
                     stream=False,
-                    timeout=httpx.Timeout(900.0),
+                    timeout=httpx.Timeout(300.0), # Set the timeout to 300 seconds (5 minutes)
                 )
 
-                #print(chat_completion)
+                print(chat_completion)
                 if (chat_completion is not None):
                         #print(chat_completion.choices[0].message.content)
                         text_response = chat_completion.choices[0].message.content
 
-                        TrainingMessage(request=json_data['message'], response=text_response).save()
+                        #await TrainingMessage(request=json_data['message'], response=text_response).save()
+                        await self.saveTrainingMessage(json_data['message'], text_response)
                 else:
                     text_response = "Timeout when llm responses"
             except Exception as e:
@@ -169,3 +171,28 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 # print(entity.get('value'))
                 symptom = Symptom(name= entity.get('value'))
                 symptom.save()
+
+    @database_sync_to_async
+    def saveTrainingMessage(self, request, response):
+        trainingMessage = TrainingMessage(request=request, response=response)
+        trainingMessage.save()
+
+    @sync_to_async
+    def call_llm_api(self, request) -> str:
+        chat_completion = client.chat.completions.create(
+            model="llama3.2:1b-instruct-ggml-fp16-linux",
+            messages=[
+                {
+                    "role": "user",
+                    "content": request,
+                }
+            ],
+            stream=False,
+            timeout=httpx.Timeout(300.0), # Set the timeout to 300 seconds (5 minutes)
+        )
+
+        if (chat_completion is not None):
+            return chat_completion.choices[0].message.content
+        else:
+            #chat_completion.choices[0].message.content
+            return "Timeout when llm responses"
