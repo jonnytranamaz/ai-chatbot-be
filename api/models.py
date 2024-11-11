@@ -97,7 +97,12 @@ class Message(models.Model):
     def __str__(self):
         return f"Message {self.id} in Conversation {self.conversation.id} by {self.sender.telephone if self.sender else 'Bot'}"
 
+class TrainingMessage(models.Model):
+    request = models.TextField()
+    response = models.TextField()
 
+    def __str__(self):
+        return f"Request: {self.request[:50]}... Response: {self.response[:50]}..."
    
 
 
